@@ -4,10 +4,14 @@ import (
     "fmt"
 )
 
-
+/*
+Просто запрашиваем данные от пользователя и подставляем в текст
+Да, тут имена читаются по одному слову, возможность сделать их многословными не реализована
+Для этого же надо написать всё через scanner ("os" и "bufio")?
+*/
 func firstTask() {
-    var planetName, starName, rangerName string
-    var money int
+    var planetName, starName, rangerName string = "Awesome planet", "Awesome star", "Awesome ranger"
+    var money int = 1000000
     fmt.Println("Write the planet, star and ranger name and the amount of money")
     fmt.Scanf("%s %s %s %d", &planetName, &starName, &rangerName, &money)
     fmt.Print("Как вам, ", rangerName, ", известно, мы раса мирная, поэтому на наших военных кораблях используются\nнаёмники с других планет. Система набора отработана давным-давно. Обычно мы приглашаем на\nнаши корабли людей с планеты " , planetName,  " системы ", starName, ".\n" )
@@ -16,11 +20,18 @@ func firstTask() {
 }
 
 
+/*
+Делаем массив для остановок
+Считаем в цикле людей, что зашли и вышли
+Для удобства счиатаем, что люди платят при входе
+Для результат используем float64, ибо мало ли мы кортеж Земли повезем
+*/
 func secondTask() {
     fmt.Println("Программа симмуляции маршрутного такси")
     stations := [4]string {"Zeleboba's station","ZhoRa's station","New station","Old station"}
     peopleIn, peopleOut, peopleStay := 0, 0, 0
     result := 0.0
+
     for i := 0; i < 4; i++ {
         fmt.Print("Прибываем на остановку '", stations[i], "'.\n")
         fmt.Println("В салоне пассажиров:", peopleStay)
@@ -30,8 +41,7 @@ func secondTask() {
         fmt.Print("Сколько пассажиров вошло на остановке: ")
         fmt.Scanf("%d", &peopleIn)
         peopleStay += peopleIn
-        // Пусть платят на входе
-        result += float64 ( 25 * peopleIn )
+        result += float64 ( 20 * peopleIn )
         fmt.Print("Отправляемся с остановки '", stations[i], "'\n")
         fmt.Println("В салоне пассажиров:", peopleStay)
         if ( i != 3) {
@@ -45,6 +55,11 @@ func secondTask() {
     fmt.Print("Расходы на ремонт машины: ", result / 5, " рублей.\n")
     fmt.Print("Итого доход: ", result * 0.15," рублей.\n")
 }
+
+/*
+Первый обмен максимально в лоб
+Просто делаем новую переменную и меняем через нее
+*/
 
 func thirdTask() {
     fmt.Println("Variables changing")
@@ -61,6 +76,19 @@ func thirdTask() {
     fmt.Println("b:", b)
 }
 
+/*
+Даем пользователю возможность вводить все данные
+Если он пропускает эту шикарную возможность, то используем уже известные значения
+
+Дальше выводим длину бамбука на 3,5 день ( тип float32 (должно хватить  =) ))
+После считаем в цикле день, на который бамбук созреет
+Он может созреть к вечеру, поэтому есть проверка на это
+В случае если он созреет к вечеру, то соотвествующее сообщение будет выведенно
+
+Логика с dayTmp нужна для вывода корректной формы слова "день" в конце строки
+Я не знаю, зачем я это сделал, но просто захотелось ( лучше бы на английском написал...)
+Для удобства использовал switch-case и while ( только for, на самом деле )
+*/
 func forthTask(){
     var speed, eatingSpeed, firstLen, lenToCut float32 = 50.0, 20.0, 100.0, 300.0
     print("На сколько за день растет бамбук?\n")
@@ -74,6 +102,12 @@ func forthTask(){
     thirdDayLen := float32 (firstLen + (speed * 3.5 - eatingSpeed * 2))
     fmt.Println("Длина бамбука в середине третьего дня =", thirdDayLen, "см.")
 
+
+    if ( firstLen < lenToCut && speed <= eatingSpeed) {
+        fmt.Println("Бамбук не созреет, злые гусеницы съедят его раньше...")
+        return
+    }
+
     day := 1
     dayString := "дня."
     word := "через"
@@ -86,6 +120,7 @@ func forthTask(){
         firstLen -= eatingSpeed
         day++
     }
+
     dayTmp := day
     for dayTmp > 100 {
         dayTmp %= 10
@@ -110,20 +145,28 @@ func forthTask(){
     fmt.Println("Бамбук созреет", word, day, dayString)
 }
 
+
+/*
+Делаем смену в стиле python
+Будет ругаться на разные типы данных
+*/
 func fifthTask(){
     fmt.Println("Variables changing")
     a := 42
     b := 153
     fmt.Println("a:", a)
     fmt.Println("b:", b)
-    // очевидно, что с разными типами работать не будет, но что поделать
-    // это более питоновская запись, поэтому она удобная для понимания
+
     a, b = b, a
 
     fmt.Println("a:", a)
     fmt.Println("b:", b)
 }
 
+
+/*
+Делаем через swap на указателях в стиле С
+*/
 func swap(a, b *int) {
     tmp := *a
     *a = *b
@@ -143,12 +186,19 @@ func fifthTaskSwap(){
     fmt.Println("b:", b)
 }
 
-
+/*
+Просто свалка для фунцкий и их вызова
+*/
 func main () {
-    //firstTask()
-    //secondTask()
-    //thirdTask()
+    firstTask()
+    fmt.Println()
+    secondTask()
+    fmt.Println()
+    thirdTask()
+    fmt.Println()
     forthTask()
-    //fifthTask()
-    //fifthTaskSwap()
+    fmt.Println()
+    fifthTask()
+    fmt.Println()
+    fifthTaskSwap()
 }
