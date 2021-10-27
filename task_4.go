@@ -5,20 +5,28 @@ import (
 )
 
 func exam(){
-    var result, tmp int = 0, 0
+    var result, tmp int = 0, -1
     fmt.Println("Баллы ЕГЭ.")
     fmt.Println("Введите результат первого экзамена:")
     fmt.Scanf("%d", &tmp)
-    result += tmp
+    if tmp > -1 && tmp < 101{
+        result += tmp
+    }
     fmt.Println("Введите результат второго экзамена:")
     fmt.Scanf("%d", &tmp)
-    result += tmp
+    if tmp > -1 && tmp < 101{
+        result += tmp
+    }
     fmt.Println("Введите результат третьего экзамена:")
     fmt.Scanf("%d", &tmp)
-    result += tmp
+    if tmp > -1 && tmp < 101{
+        result += tmp
+    }
     fmt.Println("Сумма проходных баллов: 275")
     fmt.Println("Колличество набранных баллов:", result)
-    if result < 275 {
+    if result == -1{
+        fmt.Println("Введенные даныые неверны, или у вас неправильные экзамены")
+    } else if result < 275 {
         fmt.Println("Вы не поступили.")
     } else {
         fmt.Println("Вы поступили.")
@@ -42,7 +50,7 @@ func money() {
     print("Введите сумму снятия со счета:\n")
     var cash int
     fmt.Scanf("%d", &cash)
-    if ( cash % 500 == 0) && (cash < 100001 ) {
+    if ( cash % 100 == 0) && (cash < 100001 ) {
         fmt.Println("Операция выполенена успешно")
         fmt.Println("Вы сняли со счета", cash, "рублей.")
     } else {
