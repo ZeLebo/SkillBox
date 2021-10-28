@@ -15,6 +15,13 @@ func taskFirst() {
 }
 
 func taskSecond() {
+    var a, b int
+    fmt.Println("Put the numbers:")
+    fmt.Scanf("%d %d", &a, &b)
+    for a < a + b + 1 {
+        a++
+    }
+    fmt.Println("Here's the sum:\n", a)
 }
 
 func taskThird() {
