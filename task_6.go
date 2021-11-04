@@ -44,6 +44,8 @@ func taskThird() {
 
 func taskForth(){
     fmt.println()
+    fmt.Println("Here's the number:")
+    fmt.Println("Here's the number of dfk")
 }
 
 func taskFifth() {
