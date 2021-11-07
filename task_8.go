@@ -13,32 +13,16 @@ func taskFirst() {
     fmt.Scanf("%s", &month)
     fmt.Print("The season is ")
     switch month {
-    case "December":
-        fmt.Println("Winter")
-    case "January":
-        fmt.Println("Winter")
-    case "February":
+    case "December", "January", "February":
         fmt.Println("Winter")
 
-    case "March":
-        fmt.Println("Spring")
-    case "April":
-        fmt.Println("Spring")
-    case "May":
+    case "March", "April", "May":
         fmt.Println("Spring")
 
-    case "June":
-        fmt.Println("Summer")
-    case "July":
-        fmt.Println("Summer")
-    case "August":
+    case "June", "July", "August":
         fmt.Println("Summer")
 
-    case "September":
-        fmt.Println("Fall")
-    case "October":
-        fmt.Println("Fall")
-    case "November":
+    case "September", "October", "November":
         fmt.Println("Fall")
 
     default:
@@ -50,37 +34,23 @@ func taskSecond() {
     fmt.Println("Days of week")
     fmt.Println("Put the weekday: mon, tue, wed, thu, fri")
     day := ""
-    fmt.Scanf("%d", &day)
-    days := [5]string {"Monday", "Thuesday", "Wednesday", "Thuesday", "Friday"}
-    fmt.Println(days)
+    fmt.Scanf("%s", &day)
     switch day {
     case "mon":
-        fmt.Println(day)
-        for i := 0; i < 5; i++ {
-            fmt.Println(days[i])
-        }
+        fmt.Println("Monday")
+        fallthrough
     case "tue":
-        fmt.Println(day)
-        for i := 1; i < 5; i++ {
-            fmt.Println(days[i])
-        }
+        fmt.Println("Tuesday")
+        fallthrough
     case "wed":
-        fmt.Println(day)
-        for i := 2; i < 5; i++ {
-            fmt.Println(days[i])
-        }
+        fmt.Println("Wednesday")
+        fallthrough
     case "thu":
-        fmt.Println(day)
-        for i := 3; i < 5; i++ {
-            fmt.Println(days[i])
-        }
+        fmt.Println("Thursday")
+        fallthrough
     case "fri":
-        fmt.Println(day)
-        for i := 4; i < 5; i++ {
-            fmt.Println(days[i])
-        }
-    default:
-        fmt.Println("It's not the day of the suggested above")
+        fmt.Println("Friday")
+        break
     }
 }
 
