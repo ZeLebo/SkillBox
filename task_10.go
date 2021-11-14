@@ -5,7 +5,6 @@ import (
 	"math"
 )
 
-//1 + ∑(0,∞) (X^n/n!)
 func firstTask() {
 	fmt.Println("The first task")
 	var (
@@ -50,6 +49,6 @@ func secondTask() {
 
 
 func main() {
-//	firstTask()
+	firstTask()
 	secondTask()
 }
