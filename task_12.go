@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"fmt"
 	"io/ioutil"
-	_ "io/ioutil"
 	"os"
 	"strconv"
 	"strings"
