@@ -87,23 +87,24 @@ func forthTask() {
 	fmt.Println("The forth task")
 	fmt.Println("Put the data here")
 	answer := ""
-	_, err := fmt.Scan(&answer)
-	if answer != "exit" {
-		_, err = os.Create("anotherTest.txt")
-		errorHandler(err)
-	}
+
+	os.Create("anotherTest.txt")
 	var stringToWrite string
-	for i := 1; err == nil && answer != "exit"; i++ {
-		stringToWrite += strconv.Itoa(i) + ". " + time.Now().Format("2006-01-02 15:04:05") + " " + answer + "\n"
-		_, err = fmt.Scan(&answer)
+	for i := 1; true; i++ {
+		answer, _ = bufio.NewReader(os.Stdin).ReadString('\n')
+		if answer == "exit\n" {
+			ioutil.WriteFile("anotherTest.txt", []byte(stringToWrite), 666)
+			break
+		}
+		stringToWrite += strconv.Itoa(i) + ". " + time.Now().Format("2006-01-02 15:04:05") + " " + answer
 	}
-	err = ioutil.WriteFile("anotherTest.txt", []byte(stringToWrite),666)
-	errorHandler(err)
 
 	fmt.Println("Reading data from file")
 	file, err := ioutil.ReadFile("anotherTest.txt")
 	errorHandler(err)
 	fmt.Printf("%s", file)
+
+	os.Remove("anotherTest.txt")
 }
 
 func fifthTask() {
@@ -161,9 +162,9 @@ func generateParens(leftRem int, rightRem int, str []rune, count int) []string {
 }
 
 func main() {
-	//firstTask()
-	//secondTask()
-	//thirdTask()
+	firstTask()
+	secondTask()
+	thirdTask()
 	forthTask()
-	//fifthTask()
+	fifthTask()
 }
