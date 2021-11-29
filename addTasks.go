@@ -91,8 +91,8 @@ func longMultiply() {
     for i := 0; i < 50; i++ {
         result[i], result[99 - i] = result[99 - i], result[i]
     }
-    answer, _ := strconv.Atoi(runesToString(result))
-    fmt.Println(answer)
+
+    fmt.Println(runesToString(result))
 }
 
 func checkString(str string, subs ...string) bool {
@@ -126,7 +126,7 @@ func main() {
     //substring()
     //stringSort()
     //IPgenerator()
-    //longMultiply()
+    longMultiply()
     //numberContatining()
     //fileNameChanging(os.Args[1])
 }
