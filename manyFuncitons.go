@@ -27,7 +27,7 @@ func multiFuncResult(f ...int) {
 	}
 }
 
-// Make it execute after linking or compiling( forgot this moment )
+// Make it execute after passing into this function
 // Here I can pass only exact amount of arguments
 func manyFunc(a, b int, f ... func(... int) int) {
 	for i := len(f) - 1; i > -1; i-- {
