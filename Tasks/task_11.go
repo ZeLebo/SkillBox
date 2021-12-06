@@ -1,14 +1,14 @@
 package main
 
 import (
-	"fmt";
-	"bufio";
-	"os";
-	"strconv";
+	"bufio"
+	"fmt"
+	"os"
+	"strconv"
 	"strings"
 )
 
-func firstTask() {
+func countingUpperCase() {
 	fmt.Println("The first task")
 	fmt.Println("Put the string to count")
 
@@ -40,7 +40,7 @@ func trimLastChar ( s string ) string {
     return string(r[:len(r)-1])
 }
 
-func secondTask() {
+func isContainingNumbers() {
 	var result []string
 
 	fmt.Println("The second task")
@@ -69,6 +69,6 @@ func secondTask() {
 }
 
 func main() {
-//	firstTask()
-	secondTask()
+//	countingUpperCase()
+	isContainingNumbers()
 }

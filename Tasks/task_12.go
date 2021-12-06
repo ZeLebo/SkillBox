@@ -72,7 +72,7 @@ func thirdTask() {
 	stats, _ := os.Stat("permission.txt")
 	fmt.Printf("Permision before: %s\n", stats.Mode())
 	_, _ = f.WriteString("Hello worlds")
-	err = os.Chmod("permission.txt", 777)
+	err = os.Chmod("permission.txt", 755)
 	errorHandler(err)
 
 	stats, _ = os.Stat("permission.txt")
