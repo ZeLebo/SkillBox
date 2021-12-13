@@ -3,7 +3,6 @@ package main
 import "fmt"
 
 func main() {
-
 	defer func() {
 		fmt.Println("I've made it")
 	}()
