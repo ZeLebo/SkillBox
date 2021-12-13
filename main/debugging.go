@@ -1,12 +1,15 @@
 package main
 
-func doPanic(a int) {
-	if a < 1 {
-		doPanic(a - 1)
-	}
-	panic(a)
-}
+import "fmt"
 
 func main() {
-	doPanic(5)
+
+	defer func() {
+		fmt.Println("I've made it")
+	}()
+
+	a := func(a int) int {
+		return a * a
+	}(3)
+	fmt.Println(a)
 }
