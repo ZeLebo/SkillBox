@@ -7,7 +7,7 @@ func mySwap(a, b *int) {
 	*b = tmp
 }
 
-func add(a, b int) int {
+func additionHere(a, b int) int {
 	var result int
 	if a > b {
 		mySwap(&a, &b)
@@ -25,7 +25,7 @@ func main() {
 	fmt.Println("The first task")
 	fmt.Println("Put here 2 numbers:")
 	fmt.Scanf("%d %d", &a, &b)
-	fmt.Println(add(a, b))
+	fmt.Println(additionHere(a, b))
 
 	fmt.Println("The second task")
 	fmt.Println("Before swap:", a, b)
