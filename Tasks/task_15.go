@@ -2,6 +2,8 @@ package main
 
 import "fmt"
 
+// write Benchmark
+
 func evenCounter() (int, int) {
 	var (
 		arr [10]int

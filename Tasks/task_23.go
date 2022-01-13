@@ -1,8 +1,23 @@
 package main
 
-import "fmt"
+import (
+    "fmt";
+    "strings"
+)
 
 const ARR_SIZE = 10
+const SENT_SIZE = 4
+const CHARS_SIZE = 5
+
+func firstTask() {
+    testArr := [ARR_SIZE]int {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
+    even, odd := evenOdd(testArr)
+    if len(even) == 0 && len(odd) == 0 {
+        panic("Something went wrong…")
+    }
+    fmt.Println("The even array:", even)
+    fmt.Println("The odd array:", odd)
+}
 
 func isEven(a int) bool {
     if a % 2 == 0 {
@@ -24,46 +39,21 @@ func evenOdd(arr [ARR_SIZE]int) ([] int, []int) {
     return even, odd
 }
 
-func firstTask() {
-    testArr := [ARR_SIZE]int {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
-    even, odd := evenOdd(testArr)
-    if even == nil || odd == nil {
-        fmt.Println("Something went wrong…")
-    }
-}
-
-const SENT_SIZE = 4
-const CHARS_SIZE = 5
-
 func secondTask() {
     sentences := [SENT_SIZE]string {
-        "Hello world",
-        "Hello Skillbox",
-        "Привет Мир",
-        "Привет Skillbox"}
+        "Hello world", "Hello ZhoRa",
+        "Turn the lighst off", "Congrats Skillbox"}
+    chars := [CHARS_SIZE]rune {'H', 'O', 'L', 'W', 'S'}
 
-    chars := [CHARS_SIZE]rune {
-        'H', 'E', 'L', 'П', 'М'}
-    for _, word := range(sentences) {
-        getLastWord(word)
+    result := parseTest(sentences, chars)
+    for i := range result {
+        for j := range result[i] {
+            if result[i][j] != -1 {
+                fmt.Println(string(chars[j]), "found in sentence", i + 1 ,"at index:", result[i][j])
+            }
+        }
+        println()
     }
-    fmt.Println(parseTest(sentences, chars))
-}
-
-func getLastWord(sentence string) (int, string) {
-    if len(sentence) == 0 {
-        panic("The word is too small")
-    }
-
-    var word []rune
-
-    for i := len(sentence) - 1 ; i > -1 && sentence[i] != ' '; i-- {
-        word = append(word, rune(sentence[i]))
-    }
-    for i := 0; i < len(word) / 2; i++ {
-        word[i], word[len(word) - i - 1] = word[len(word) - i - 1], word[i]
-    }
-    return len(sentence) - len(word), string(word)
 }
 
 func getLastWordIndex(sentence string) int {
@@ -72,10 +62,27 @@ func getLastWordIndex(sentence string) int {
     }
     for i := len(sentence) - 1; i > -1; i-- {
         if sentence[i] == ' ' {
-            return i
+            return i + 1
         }
     }
     return 0
+}
+
+func findIdx(sentence string, char rune) int {
+    id := getLastWordIndex(sentence)
+    for ; id < len(sentence); id++ {
+        if string(sentence[id]) == string(char) || string(sentence[id]) == strings.ToLower(string(char)) {
+            return id
+        }
+    }
+    return -1
+}
+
+func checkLetter(a byte, b rune) bool {
+    if string(a) == string(b) || string(a) == strings.ToLower(string(b)) {
+        return true
+    }
+    return false
 }
 
 func parseTest(sentences [SENT_SIZE]string, chars [CHARS_SIZE]rune) ([SENT_SIZE][CHARS_SIZE]int) {
@@ -91,21 +98,15 @@ func parseTest(sentences [SENT_SIZE]string, chars [CHARS_SIZE]rune) ([SENT_SIZE]
         }
     }
 
-    for i := 0; i < SENT_SIZE; i++ {
-        for index := getLastWordIndex(sentences[i]); index < len(sentences[i]); index++ {
-            print(string(sentences[i][index]))
-            for j := range chars {
-                if string(sentences[i][index]) == string(chars[j]) {
-                    result[i][j] = index
-                    break
-                }
-            }
+    for i := range sentences {
+        for j := range chars {
+            result[i][j] = findIdx(sentences[i], chars[j])
         }
     }
     return result
 }
 
-
 func main() {
-    firstTask(); secondTask();
+    fmt.Println("The first task:"); firstTask()
+    fmt.Println("\nThe second task:"); secondTask()
 }
