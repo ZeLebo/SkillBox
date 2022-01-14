@@ -1,11 +1,10 @@
-package main
+package benchmark
 
 import (
 		"fmt";
-		"testing"
+		"testing";
+		"math/rand"
 )
-
-func Benchmark_recursion()
 
 func recursion (n int) int {
 	result := 0
@@ -38,10 +37,16 @@ func addition(n int) int {
 	return result
 }
 
-func main() {
-	var n int
-	fmt.Scan(&n)
-
-	fmt.Println(addition(n))
+func Benchmark_recursion(b *testing.B) {
+	n := rand.Intn(40)
 	fmt.Println(recursion(n))
+
+	// fmt.Println(recursion(30))
+}
+
+func Benchmark_addition(b *testing.B) {
+	n := rand.Intn(40)
+	fmt.Println(addition(n))
+
+	// fmt.Println(addition(30))
 }
