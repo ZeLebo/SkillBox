@@ -40,7 +40,6 @@ func selectionSort(a [ARR_SIZE]int) [ARR_SIZE]int {
 
 func main() {
 	var randomArr [ARR_SIZE]int
-	fmt.Println("Give me the numbers")
 	for i := 0; i < ARR_SIZE; i++ {
 		randomArr[i] = rand.Int() % 100
 	}
