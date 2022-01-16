@@ -2,21 +2,29 @@ package main
 
 import (
 	"fmt"
-	// "math/rand"
+	"os"
+    "bufio"
+    "strings"
+    "strconv"
+	"math/rand"
 )
 
 func getArrayUser() []int {
-	fmt.Println("Put here the numbers (one for one line):")
-	var arr []int
-	var tmp int
+    fmt.Println("Give me the numbers")
+    arrString, err := bufio.NewReader(os.Stdin).ReadString('\n')
 
-	_, err := fmt.Scanf("%d", &tmp)
-	for err == nil {
-		arr = append(arr, tmp)
-		_, err = fmt.Scanf("%d", &tmp)
-	}
+    if err != nil {
+        panic(err)
+    }
 
-	return arr
+    var result []int
+    hateTheseErrors := strings.Fields(arrString)
+    for _, num := range hateTheseErrors {
+        convNum, _ := strconv.Atoi(num)
+        result = append(result, convNum)
+    }
+
+    return result
 }
 
 const ARR_SIZE = 10
@@ -35,12 +43,11 @@ func main() {
 	var randomArr [ARR_SIZE]int
 	fmt.Println("Give me the numbers")
 	for i := 0; i < ARR_SIZE; i++ {
-		// randomArr[i] = rand.Int() % 100
-		fmt.Scanf("%d", &randomArr[i])
+		randomArr[i] = rand.Int() % 100
 	}
     fmt.Println("Selection sort:", selectionSort(randomArr))
 
-    fmt.Println("Wrong bubble (right stone©) sort:",
+    fmt.Println("Wrong bubble (right stone) sort:",
         func (a... int) [] int {
             for i := 0; i < len(a); i++ {
                 for j := 0; j < len(a); j++ {
