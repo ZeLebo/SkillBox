@@ -18,8 +18,7 @@ func getArrayUser() []int {
     }
 
     var result []int
-    hateTheseErrors := strings.Fields(arrString)
-    for _, num := range hateTheseErrors {
+    for _, num := range strings.Fields(arrString) {
         convNum, _ := strconv.Atoi(num)
         result = append(result, convNum)
     }
