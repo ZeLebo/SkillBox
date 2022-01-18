@@ -21,8 +21,8 @@ func main() {
     var (
         name string;
         age, grade int;
-        storage map[string] *Student
     )
+    storage := make(map[string] *Student)
 
     _, err := fmt.Scanf("%s %d %d", &name, &age, &grade)
     for  err == nil {
