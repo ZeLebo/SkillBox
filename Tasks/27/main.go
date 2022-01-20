@@ -7,7 +7,7 @@ type Student struct {
     age, grade int
 }
 
-func newStudent(name string, age, grade int) *Student{
+func newStudent(name string, age, grade int) *Student {
     var chel Student
     chel.name = name
     chel.age = age
