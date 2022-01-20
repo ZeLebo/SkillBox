@@ -34,6 +34,9 @@ func (s Student) GetGrade() int {
 	return s.Grade
 }
 
+func (s Student) GetInfo() (string, int, int) {
+	return s.Name, s.Age, s.Grade
+}
 
 func (s Student) PrintInfo() {
 	fmt.Fprintf(os.Stdout, "Student: %s, Age: %d, Grade: %d\n", s.Name, s.Age, s.Grade)
@@ -45,20 +48,4 @@ func NewStudent(name string, age, grade int) *Student {
 	chel.Age = age
 	chel.Grade = grade
 	return &chel
-}
-
-func GetStudent() map[string] *Student {
-    var (
-        name string;
-        age, grade int
-    )
-    storage := make(map[string] *Student)
-
-    size, err := fmt.Fscanf(os.Stdin, "%s %d %d", &name, &age, &grade)
-    for  err == nil && size == 3 {
-        storage[name] = NewStudent(name, age, grade)
-        size, err = fmt.Fscanf(os.Stdin, "%s %d %d", &name, &age, &grade)
-    }
-
-    return storage
 }
