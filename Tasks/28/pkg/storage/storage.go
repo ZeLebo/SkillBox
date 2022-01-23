@@ -1,4 +1,4 @@
-package main
+package student
 
 import (
     "student/pkg/student"
@@ -20,11 +20,4 @@ func GetStudent() map[string] *student.Student {
     }
 
     return storage
-}
-
-func main() {
-    storage := GetStudent()
-    for i := range storage {
-        storage[i].PrintInfo()
-    }
 }
