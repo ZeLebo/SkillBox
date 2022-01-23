@@ -1,4 +1,4 @@
-package student
+package storage
 
 import (
     "student/pkg/student"

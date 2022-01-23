@@ -5,7 +5,7 @@ import (
 )
 
 func main() {
-        
+
     storage := stor.GetStudent()
     for i := range storage {
         storage[i].PrintInfo()
