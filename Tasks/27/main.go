@@ -21,7 +21,7 @@ func main() {
         age, grade int
     )
     storage := make(map[string] *Student)
-
+    fmt.Println("Put here names, ages and grades of the students(format: string, decimal, decimal)")
     size, err := fmt.Scanf("%s %d %d", &name, &age, &grade)
     for  err == nil && size == 3 {
         storage[name] = newStudent(name, age, grade)
