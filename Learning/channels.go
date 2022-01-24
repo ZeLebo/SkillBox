@@ -14,6 +14,7 @@ func foo(ch chan int) {
 
 func main() {
 	fmt.Println("main() started")
+	some := make(chan string)
 	long := make(chan int, 3)
 	long <- 3
 	long <- 4
