@@ -1,7 +1,6 @@
-/*
-This file need to be started first, than it will do all the work
-*/
 package main
+
+//This file need to be started first, than it will do all the work
 
 import (
 	client "user/pkg/client"
