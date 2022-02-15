@@ -1,58 +1,64 @@
 /*
 This is the user structure
 */
+
 package user
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 )
 
 type User struct {
-	Name    string
-	Age     int
-	Friends []User
+	Name    string `json:"name"`
+	Age     int    `json:"age"`
+	Friends []User `json:"friends"`
 }
 
-// returns the name of the user
+func (u *User) ToString() string {
+	return fmt.Sprintf("Name is %s, Age is %d, Friends: %v\n", u.Name, u.Age, u.Friends)
+}
+
+// GetName returns the name of the user
 func (u User) GetName() string {
 	return u.Name
 }
 
-// returns the age of the user
+// GetAge returns the a™ge of the user
 func (u User) GetAge() int {
 	return u.Age
 }
 
-// returns the friends of the user
+// GetFriends returns the friends of the user
 func (u User) GetFriends() []User {
 	return u.Friends
 }
 
-// set the name of the user
+// SetName set the name of the user
 func (u *User) SetName(name string) {
 	u.Name = name
 }
 
-// set the age of the user
+// SetAge set the age of the user
 func (u *User) SetAge(age int) {
 	u.Age = age
 }
 
-// add one or more friends to the user
+// AddFriends add one or more friends to the user
 func (u *User) AddFriends(friends ...User) {
 	if u.Friends == nil {
-		u.Friends = make([]User, 0)
+		u.Friends = make([]User, 1)
 	}
 	u.Friends = append(u.Friends, friends...)
 }
 
-// remove all the friends from the user
+// ClearFriends remove all the friends from the user
 func (u *User) ClearFriends() {
 	u.Friends = nil
 }
 
-// remove one friend from user 
+// RemoveFriend remove one friend from user
 func (u *User) RemoveFriend(friend User) {
 	for i := range u.Friends {
 		if reflect.DeepEqual(u.Friends[i], friend) {
@@ -63,7 +69,7 @@ func (u *User) RemoveFriend(friend User) {
 	log.Printf("No such friend")
 }
 
-// remove one or more friends from user
+// RemoveFriends remove one or more friends from user
 func (u *User) RemoveFriends(friends ...User) {
 	for i := range friends {
 		for j := range u.Friends {
@@ -75,16 +81,15 @@ func (u *User) RemoveFriends(friends ...User) {
 	}
 }
 
-// erases the user from the memory
-func (u *User) EraseUser() {
-	log.Println("Removing", u.Name)
-	u.Friends = nil
-	u = nil
-}
-
-// creates a new user and returns the link to it
+// NewUser creates a new user and returns the link to it
 func NewUser(name string, age int) *User {
 	user := &User{Name: name, Age: age}
-	log.Println("New user", user.Name, "was make")
+	log.Println("New user was created")
 	return user
+}
+
+// FriendPeople function to make two users friends
+func FriendPeople(u1, u2 *User) {
+	u1.Friends = append(u1.Friends, *u2)
+	u2.Friends = append(u2.Friends, *u1)
 }
