@@ -5,8 +5,9 @@ This is the user structure
 package user
 
 import (
+	"crypto/sha256"
 	"fmt"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"reflect"
 )
 
@@ -14,6 +15,13 @@ type User struct {
 	Name    string `json:"name"`
 	Age     int    `json:"age"`
 	Friends []User `json:"friends"`
+}
+
+func (u *User) Hash() string {
+	h := sha256.New()
+	h.Write([]byte(fmt.Sprintf("%v", u)))
+
+	return fmt.Sprintf("%x", h.Sum(nil))
 }
 
 func (u *User) ToString() string {
@@ -25,7 +33,7 @@ func (u User) GetName() string {
 	return u.Name
 }
 
-// GetAge returns the a™ge of the user
+// GetAge returns the age of the user
 func (u User) GetAge() int {
 	return u.Age
 }
@@ -71,9 +79,10 @@ func (u *User) RemoveFriend(friend User) {
 
 // RemoveFriends remove one or more friends from user
 func (u *User) RemoveFriends(friends ...User) {
-	for i := range friends {
+	for i, man := range friends {
 		for j := range u.Friends {
-			if reflect.DeepEqual(u.Friends[j], i) {
+			if reflect.DeepEqual(u.Friends[j], man) {
+				log.Printf("%s's friend %s has been removed\n", u.Name, man.Name)
 				u.Friends = append(u.Friends[:i], u.Friends[i+1:]...)
 				break
 			}
@@ -82,8 +91,11 @@ func (u *User) RemoveFriends(friends ...User) {
 }
 
 // NewUser creates a new user and returns the link to it
-func NewUser(name string, age int) *User {
-	user := &User{Name: name, Age: age}
+func NewUser(name string, age int) User {
+	user := User{
+		Name: name,
+		Age:  age,
+	}
 	log.Println("New user was created")
 	return user
 }
