@@ -1,31 +1,39 @@
-/*
-This is the user structure
-*/
-
+// Package user /*
 package user
 
 import (
-	"crypto/sha256"
 	"fmt"
-	log "github.com/sirupsen/logrus"
 	"reflect"
+	"strconv"
 )
 
 type User struct {
-	Name    string `json:"name"`
-	Age     int    `json:"age"`
-	Friends []User `json:"friends"`
-}
-
-func (u *User) Hash() string {
-	h := sha256.New()
-	h.Write([]byte(fmt.Sprintf("%v", u)))
-
-	return fmt.Sprintf("%x", h.Sum(nil))
+	Name    string  `json:"name"`
+	Age     int     `json:"age"`
+	Friends []*User `json:"friends"`
 }
 
 func (u *User) ToString() string {
-	return fmt.Sprintf("Name is %s, Age is %d, Friends: %v\n", u.Name, u.Age, u.Friends)
+	result := fmt.Sprintf("Name is %s, Age is %d", u.Name, u.Age)
+	if len(u.Friends) > 0 {
+		if len(u.Friends) > 1 {
+			result += ", Friends ["
+			for i, man := range u.Friends {
+				result += "{"
+				result += man.GetName() + " "
+				result += strconv.Itoa(man.GetAge()) + "}"
+				if i != len(u.Friends)-1 {
+					result += ", "
+				}
+			}
+			result += "]\n"
+		} else {
+			result += " Friend {"
+			result += u.Friends[0].GetName() + " "
+			result += strconv.Itoa(u.Friends[0].GetAge()) + "}\n"
+		}
+	}
+	return result
 }
 
 // GetName returns the name of the user
@@ -39,7 +47,7 @@ func (u User) GetAge() int {
 }
 
 // GetFriends returns the friends of the user
-func (u User) GetFriends() []User {
+func (u User) GetFriends() []*User {
 	return u.Friends
 }
 
@@ -53,12 +61,27 @@ func (u *User) SetAge(age int) {
 	u.Age = age
 }
 
-// AddFriends add one or more friends to the user
-func (u *User) AddFriends(friends ...User) {
-	if u.Friends == nil {
-		u.Friends = make([]User, 1)
+func (u *User) isFriend(friend *User) bool {
+	for _, i := range u.Friends {
+		if (i.Name == friend.Name) && (i.Age == friend.Age) {
+			for j := range i.Friends {
+				if reflect.DeepEqual(friend, i.Friends[j]) {
+					return false
+				}
+			}
+			return true
+		}
 	}
-	u.Friends = append(u.Friends, friends...)
+
+	return false
+}
+
+func (u *User) AddFriend(friend *User) bool {
+	if u.isFriend(friend) {
+		return false
+	}
+	u.Friends = append(u.Friends, friend)
+	return true
 }
 
 // ClearFriends remove all the friends from the user
@@ -74,7 +97,6 @@ func (u *User) RemoveFriend(friend User) {
 			return
 		}
 	}
-	log.Printf("No such friend")
 }
 
 // RemoveFriends remove one or more friends from user
@@ -82,7 +104,6 @@ func (u *User) RemoveFriends(friends ...User) {
 	for i, man := range friends {
 		for j := range u.Friends {
 			if reflect.DeepEqual(u.Friends[j], man) {
-				log.Printf("%s's friend %s has been removed\n", u.Name, man.Name)
 				u.Friends = append(u.Friends[:i], u.Friends[i+1:]...)
 				break
 			}
@@ -96,12 +117,11 @@ func NewUser(name string, age int) User {
 		Name: name,
 		Age:  age,
 	}
-	log.Println("New user was created")
 	return user
 }
 
 // FriendPeople function to make two users friends
 func FriendPeople(u1, u2 *User) {
-	u1.Friends = append(u1.Friends, *u2)
-	u2.Friends = append(u2.Friends, *u1)
+	u1.Friends = append(u1.Friends, u2)
+	u2.Friends = append(u2.Friends, u1)
 }
