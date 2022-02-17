@@ -5,10 +5,13 @@ import (
 	s "user/pkg/service"
 )
 
+// The entry point
+
 func main() {
 	mux := http.NewServeMux()
 	srv := s.NewService()
 
+	// request handlers
 	mux.HandleFunc("/get", srv.GetAllUsers)          // get all users
 	mux.HandleFunc("/create", srv.Create)            // create a new user
 	mux.HandleFunc("/make_friends", srv.MakeFriends) // make two users friends

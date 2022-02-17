@@ -13,8 +13,10 @@ type User struct {
 	Friends []*User `json:"friends"`
 }
 
+// ToString func returns a string, describing the user
 func (u *User) ToString() string {
 	result := fmt.Sprintf("Name is %s, Age is %d", u.Name, u.Age)
+	// having fun with the friends... at least there...
 	if len(u.Friends) > 0 {
 		if len(u.Friends) > 1 {
 			result += ", Friends ["
@@ -61,6 +63,8 @@ func (u *User) SetAge(age int) {
 	u.Age = age
 }
 
+// Checks whether the user has specific user as friend
+// Needed in AddFriend func
 func (u *User) isFriend(friend *User) bool {
 	for _, i := range u.Friends {
 		if (i.Name == friend.Name) && (i.Age == friend.Age) {
@@ -76,6 +80,8 @@ func (u *User) isFriend(friend *User) bool {
 	return false
 }
 
+// AddFriend adds a friend to user Friends field
+// if such friend exists - does nothing
 func (u *User) AddFriend(friend *User) bool {
 	if u.isFriend(friend) {
 		return false
@@ -83,6 +89,8 @@ func (u *User) AddFriend(friend *User) bool {
 	u.Friends = append(u.Friends, friend)
 	return true
 }
+
+// Some sort of Indian code (done before and now it's pity to erase)
 
 // ClearFriends remove all the friends from the user
 func (u *User) ClearFriends() {
@@ -101,13 +109,8 @@ func (u *User) RemoveFriend(friend User) {
 
 // RemoveFriends remove one or more friends from user
 func (u *User) RemoveFriends(friends ...User) {
-	for i, man := range friends {
-		for j := range u.Friends {
-			if reflect.DeepEqual(u.Friends[j], man) {
-				u.Friends = append(u.Friends[:i], u.Friends[i+1:]...)
-				break
-			}
-		}
+	for _, man := range friends {
+		u.RemoveFriend(man)
 	}
 }
 
