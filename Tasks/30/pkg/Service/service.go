@@ -3,6 +3,7 @@ package service
 
 import (
 	"encoding/json"
+	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math/rand"
@@ -129,8 +130,9 @@ func (s *service) ChangeAge(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// parse the header of request
-	num, _ := strconv.Atoi(r.URL.Query().Get("id"))
-	req.TargetID = int32(num)
+	vars := mux.Vars(r)
+	tmp, _ := strconv.Atoi(vars["id"])
+	req.TargetID = int32(tmp)
 
 	if _, ok := s.store[req.TargetID]; !ok {
 		w.Write([]byte("No such user"))
@@ -138,7 +140,7 @@ func (s *service) ChangeAge(w http.ResponseWriter, r *http.Request) {
 	}
 	// change age doesn't change the age in friends
 	s.store[req.TargetID].SetAge(req.Age)
-	w.Write([]byte("User's age was updated"))
+	w.Write([]byte("User's age was updated\n"))
 	log.Info("User ", req.TargetID, " age has been changed to ", req.Age)
 }
 
@@ -151,8 +153,9 @@ func (s *service) GetFriends(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Here I get the key from the header, instead I wanna get it without ? symbol in the header
-	num, _ := strconv.Atoi(r.URL.Query().Get("id"))
-	id := int32(num)
+	vars := mux.Vars(r)
+	tmp, _ := strconv.Atoi(vars["id"])
+	id := int32(tmp)
 
 	if _, ok := s.store[id]; !ok {
 		w.Write([]byte("No such user"))
@@ -160,6 +163,9 @@ func (s *service) GetFriends(w http.ResponseWriter, r *http.Request) {
 	}
 	// collecting data from the user
 	answer := func(u []*u.User) string {
+		if len(u) == 0 {
+			return "User has no friends\n"
+		}
 		result := "Friends of " + s.store[id].Name + ":"
 		for _, man := range u {
 			result += "\n" + man.ToString()

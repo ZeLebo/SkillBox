@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gorilla/mux"
 	"net/http"
 	s "user/pkg/service"
 )
@@ -8,19 +9,18 @@ import (
 // The entry point
 
 func main() {
-	mux := http.NewServeMux()
 	srv := s.NewService()
+	router := mux.NewRouter()
 
 	// request handlers
-	mux.HandleFunc("/get", srv.GetAllUsers)          // get all users
-	mux.HandleFunc("/create", srv.Create)            // create a new user
-	mux.HandleFunc("/make_friends", srv.MakeFriends) // make two users friends
-	mux.HandleFunc("/user", srv.DeleteUser)          // delete user by target_id
+	router.HandleFunc("/get", srv.GetAllUsers)          // get all users
+	router.HandleFunc("/create", srv.Create)            // create a new user
+	router.HandleFunc("/make_friends", srv.MakeFriends) // make two users friends
+	router.HandleFunc("/user", srv.DeleteUser)          // delete user by target_id
 
-	// The request has to be done this way
-	// curl -X PUT -d '{"new age":1000}' "localhost:8080?id=1298498081"
-	mux.HandleFunc("/", srv.ChangeAge)          // change the age of the user
-	mux.HandleFunc("/friends/", srv.GetFriends) // get friends of the user
+	router.HandleFunc("/{id:[0-9]+}", srv.ChangeAge)          // change the age of the user
+	router.HandleFunc("/friends/{id:[0-9]+}", srv.GetFriends) // get friends of the user
+	http.Handle("/", router)
 
-	http.ListenAndServe("localhost:8080", mux)
+	http.ListenAndServe("localhost:8080", nil)
 }
