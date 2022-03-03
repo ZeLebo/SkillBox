@@ -5,7 +5,6 @@ import (
 	"net/http"
 	s "user/pkg/service"
 )
-
 // The entry point
 
 func main() {
