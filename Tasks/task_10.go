@@ -29,6 +29,7 @@ func firstTask() {
 }
 
 func secondTask() {
+
 	var (
 		years int
 		amount, percent, forBank float64
