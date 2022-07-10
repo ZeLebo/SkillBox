@@ -7,3 +7,6 @@ import (
 func main() {
 	micro.Test()
 }
+
+func no need() {
+}
