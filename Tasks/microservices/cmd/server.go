@@ -2,9 +2,11 @@ package main
 
 import (
 	"github.com/gorilla/mux"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	s "user/pkg/service"
 )
+
 // The entry point
 
 func main() {
@@ -19,7 +21,6 @@ func main() {
 
 	router.HandleFunc("/{id:[0-9]+}", srv.ChangeAge)          // change the age of the user
 	router.HandleFunc("/friends/{id:[0-9]+}", srv.GetFriends) // get friends of the user
-	http.Handle("/", router)
 
-	http.ListenAndServe("localhost:8080", nil)
+	log.Error(http.ListenAndServe("localhost:8080", nil))
 }

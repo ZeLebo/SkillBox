@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
+	"io"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -52,7 +53,7 @@ func (s *service) newId() int32 {
 	return id + 1
 }
 
-// GetAllUsers func to return all of the users in the map
+// GetAllUsers func to return all the users in the map
 func (s *service) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 	// error checking
 	if r.Method != "GET" {
@@ -60,7 +61,11 @@ func (s *service) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	for id, user := range s.store {
-		w.Write([]byte("id: " + strconv.Itoa(int(id)) + "\nUser: " + user.ToString() + "\n"))
+		_, err := w.Write([]byte("id: " + strconv.Itoa(int(id)) +
+			"\nUser: " + user.ToString() + "\n"))
+		if err != nil {
+			return
+		}
 	}
 }
 
@@ -73,11 +78,19 @@ func (s *service) Create(w http.ResponseWriter, r *http.Request) {
 	}
 
 	content, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Error("Cannot close body")
+		}
+	}(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Error("Cannot read the data from request")
-		w.Write([]byte(err.Error()))
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -85,7 +98,10 @@ func (s *service) Create(w http.ResponseWriter, r *http.Request) {
 
 	if err := json.Unmarshal(content, &tmpUser); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			return
+		}
 		log.Error("Cannot parse data from json")
 		return
 	}
@@ -105,7 +121,10 @@ func (s *service) Create(w http.ResponseWriter, r *http.Request) {
 
 	log.Info("New user: ", id)
 	w.WriteHeader(http.StatusCreated)
-	w.Write([]byte("\nUser " + tmpUser.Name + " was created\nid:" + strconv.Itoa(int(id)) + "\n"))
+	_, err = w.Write([]byte("\nUser " + tmpUser.Name + " was created\nid:" + strconv.Itoa(int(id)) + "\n"))
+	if err != nil {
+		return
+	}
 }
 
 // ChangeAge to change the age of specific user
@@ -117,10 +136,18 @@ func (s *service) ChangeAge(w http.ResponseWriter, r *http.Request) {
 	}
 	var req request
 	content, err := ioutil.ReadAll(r.Body)
-	defer r.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Error("Cannot close body")
+		}
+	}(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte(err.Error()))
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			return
+		}
 		log.Error("Wrong request to change age")
 		return
 
@@ -135,12 +162,18 @@ func (s *service) ChangeAge(w http.ResponseWriter, r *http.Request) {
 	req.TargetID = int32(tmp)
 
 	if _, ok := s.store[req.TargetID]; !ok {
-		w.Write([]byte("No such user"))
+		_, err := w.Write([]byte("No such user"))
+		if err != nil {
+			return
+		}
 		return
 	}
 	// change age doesn't change the age in friends
 	s.store[req.TargetID].SetAge(req.Age)
-	w.Write([]byte("User's age was updated\n"))
+	_, err = w.Write([]byte("User's age was updated\n"))
+	if err != nil {
+		return
+	}
 	log.Info("User ", req.TargetID, " age has been changed to ", req.Age)
 }
 
@@ -158,7 +191,10 @@ func (s *service) GetFriends(w http.ResponseWriter, r *http.Request) {
 	id := int32(tmp)
 
 	if _, ok := s.store[id]; !ok {
-		w.Write([]byte("No such user"))
+		_, err := w.Write([]byte("No such user"))
+		if err != nil {
+			return
+		}
 		return
 	}
 	// collecting data from the user
@@ -173,7 +209,10 @@ func (s *service) GetFriends(w http.ResponseWriter, r *http.Request) {
 		return result + "\n"
 	}(s.store[id].GetFriends())
 
-	w.Write([]byte(answer))
+	_, err := w.Write([]byte(answer))
+	if err != nil {
+		return
+	}
 }
 
 // MakeFriends make friends from 2 users
@@ -187,25 +226,37 @@ func (s *service) MakeFriends(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		log.Error("Cannot parse request data")
-		w.Write([]byte(err.Error()))
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			return
+		}
 		return
 	}
 	var data request
 	if err := json.Unmarshal(content, &data); err != nil {
 		log.Error("Cannot parse data for making friends")
-		w.Write([]byte(err.Error())) // or w.Write([]byte("Wrong request))
+		_, err := w.Write([]byte(err.Error()))
+		if err != nil {
+			return
+		} // or w.Write([]byte("Wrong request))
 		return
 	}
 
 	// id cannot be < 1, so if we have 0 it means user hasn't provided us the fields
 	if data.TargetID == 0 || data.SourceID == 0 {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("You need to provide the id's of users"))
+		_, err := w.Write([]byte("You need to provide the id's of users"))
+		if err != nil {
+			return
+		}
 		return
 	}
 
 	if data.TargetID == data.SourceID {
-		w.Write([]byte("The same user"))
+		_, err := w.Write([]byte("The same user"))
+		if err != nil {
+			return
+		}
 		return
 	}
 
@@ -222,13 +273,19 @@ func (s *service) MakeFriends(w http.ResponseWriter, r *http.Request) {
 		s.store[data.SourceID].AddFriend(&tmp)
 	} else {
 		// if false -> we already have such user in the map
-		w.Write([]byte("Users are already friends\n"))
+		_, err := w.Write([]byte("Users are already friends\n"))
+		if err != nil {
+			return
+		}
 		return
 	}
 
 	// just printing and logging
-	w.Write([]byte("Users " + s.store[data.TargetID].GetName() + " and " +
+	_, err = w.Write([]byte("Users " + s.store[data.TargetID].GetName() + " and " +
 		s.store[data.SourceID].GetName() + " are now friends\n"))
+	if err != nil {
+		return
+	}
 	log.Info("Users ", s.store[data.TargetID].GetName()+" and "+
 		s.store[data.SourceID].GetName(), " are now friends")
 }
@@ -253,16 +310,22 @@ func (s *service) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	}
 	// check if this user exists
 	if _, ok := s.store[data.TargetID]; !ok {
-		w.Write([]byte("No such user"))
+		_, err := w.Write([]byte("No such user"))
+		if err != nil {
+			return
+		}
 		return
 	}
 
-	// delete from all of the friends
+	// delete from all the friends
 	for _, man := range s.store[data.TargetID].GetFriends() {
 		man.RemoveFriend(*s.store[data.TargetID])
 	}
 	// logging and deleting
-	w.Write([]byte("User " + s.store[data.TargetID].GetName() + " has been deleted\n"))
+	_, err = w.Write([]byte("User " + s.store[data.TargetID].GetName() + " has been deleted\n"))
+	if err != nil {
+		return
+	}
 	log.Info("User " + s.store[data.TargetID].GetName() + " has been deleted")
 	delete(s.store, data.TargetID)
 }

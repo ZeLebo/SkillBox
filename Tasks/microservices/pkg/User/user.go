@@ -14,25 +14,25 @@ type User struct {
 }
 
 // ToString func returns a string, describing the user
+// Todo - remove this crutch
 func (u *User) ToString() string {
 	result := fmt.Sprintf("Name is %s, Age is %d", u.Name, u.Age)
-	// having fun with the friends... at least there...
 	if len(u.Friends) > 0 {
 		if len(u.Friends) > 1 {
 			result += ", Friends ["
 			for i, man := range u.Friends {
-				result += "{"
-				result += man.GetName() + " "
-				result += strconv.Itoa(man.GetAge()) + "}"
+				result += fmt.Sprintf("{%s %s}",
+					man.GetName(), strconv.Itoa(man.GetAge()))
 				if i != len(u.Friends)-1 {
 					result += ", "
 				}
 			}
 			result += "]\n"
 		} else {
-			result += " Friend {"
-			result += u.Friends[0].GetName() + " "
-			result += strconv.Itoa(u.Friends[0].GetAge()) + "}\n"
+			result += fmt.Sprintf(
+				" Friend { %s %s }\n",
+				u.Friends[0].GetName(),
+				strconv.Itoa(u.Friends[0].GetAge()))
 		}
 	}
 	return result
@@ -90,7 +90,7 @@ func (u *User) AddFriend(friend *User) bool {
 	return true
 }
 
-// Some sort of Indian code (done before and now it's pity to erase)
+// Some sort of Indian code (done before, and now it's pity to erase)
 
 // ClearFriends remove all the friends from the user
 func (u *User) ClearFriends() {
