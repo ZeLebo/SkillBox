@@ -1,0 +1,9 @@
+version: "3.3"
+
+services:
+  backend:
+    build: .
+    ports: ["60494:60494"]
+    volumes:
+      - ./pkg/Database/data:/var/lib/postgresql/data
+    restart: on-failure

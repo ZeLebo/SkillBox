@@ -1,5 +1,5 @@
 // Package service /*
-package service
+package Service
 
 import (
 	"encoding/json"
@@ -13,10 +13,6 @@ import (
 	u "user/pkg/user"
 )
 
-// There are 20 warnings for "write" function
-// It will be better to check error while writing
-// But I don't wanna do this
-
 // struct to parse the request from user
 type request struct {
 	TargetID int32 `json:"target_id"`
@@ -24,6 +20,7 @@ type request struct {
 	Age      int   `json:"new age"`
 }
 
+// TODO postgresql database instead of map
 type service struct {
 	store map[int32]*u.User
 }
@@ -54,12 +51,7 @@ func (s *service) newId() int32 {
 }
 
 // GetAllUsers func to return all the users in the map
-func (s *service) GetAllUsers(w http.ResponseWriter, r *http.Request) {
-	// error checking
-	if r.Method != "GET" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
+func (s *service) GetAllUsers(w http.ResponseWriter, _ *http.Request) {
 	for id, user := range s.store {
 		_, err := w.Write([]byte("id: " + strconv.Itoa(int(id)) +
 			"\nUser: " + user.ToString() + "\n"))
@@ -71,12 +63,12 @@ func (s *service) GetAllUsers(w http.ResponseWriter, r *http.Request) {
 
 // Create function returns id of user
 func (s *service) Create(w http.ResponseWriter, r *http.Request) {
-	// error and requirements checking
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
+	// Bind the request to the struct
+	//var req Request
+	//err := req.Bind(w, r)
+	//if err != nil {
+	//	return
+	//}
 	content, err := ioutil.ReadAll(r.Body)
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
@@ -179,12 +171,6 @@ func (s *service) ChangeAge(w http.ResponseWriter, r *http.Request) {
 
 // GetFriends of specific user
 func (s *service) GetFriends(w http.ResponseWriter, r *http.Request) {
-	// error and requirements checking
-	if r.Method != "GET" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	// Here I get the key from the header, instead I wanna get it without ? symbol in the header
 	vars := mux.Vars(r)
 	tmp, _ := strconv.Atoi(vars["id"])
@@ -217,11 +203,6 @@ func (s *service) GetFriends(w http.ResponseWriter, r *http.Request) {
 
 // MakeFriends make friends from 2 users
 func (s *service) MakeFriends(w http.ResponseWriter, r *http.Request) {
-	// error and requirements checking
-	if r.Method != "POST" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
 	content, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
@@ -292,11 +273,6 @@ func (s *service) MakeFriends(w http.ResponseWriter, r *http.Request) {
 
 // DeleteUser from the map
 func (s *service) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	// error and requirements checking
-	if r.Method != "DELETE" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
 	content, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
