@@ -1,4 +1,4 @@
-package Server
+package server
 
 import (
 	"context"
@@ -16,7 +16,7 @@ type myServer struct {
 	reqCount    uint32
 }
 
-// NewServer constructor for Server
+// NewServer constructor for server
 func NewServer(addr string) *myServer {
 	myRouter := &myServer{
 		Server: http.Server{
@@ -48,6 +48,6 @@ func (myRouter *myServer) WaitShutdown() {
 
 	//shutdown the server
 	if err := myRouter.Shutdown(ctx); err != nil {
-		log.Error("Error on shutdown", err)
+		log.Error("logger on shutdown", err)
 	}
 }

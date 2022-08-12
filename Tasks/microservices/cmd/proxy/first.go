@@ -1,12 +1,22 @@
 package main
 
 import (
+	env "github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
-	s "user/pkg/Server"
+	"os"
+	s "user/pkg/server"
 )
 
+func init() {
+	err := env.Load("../../.env")
+	if err != nil {
+		log.Error(err.Error())
+		os.Exit(1)
+	}
+}
+
 func main() {
-	var address = "0.0.0.0:60494"
+	address := os.Getenv("FIRST_IP")
 	server := s.NewServer(address)
 	log.Info("The server is up and running at ", server.Addr, "\n")
 

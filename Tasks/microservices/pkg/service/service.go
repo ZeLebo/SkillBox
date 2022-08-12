@@ -1,23 +1,25 @@
 // Package service /*
-package Service
+package service
 
 import (
-	"encoding/json"
 	"github.com/gorilla/mux"
 	log "github.com/sirupsen/logrus"
-	"io"
-	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"strconv"
+	"user/pkg/logger"
+	"user/pkg/service/validators"
 	u "user/pkg/user"
 )
 
-// struct to parse the request from user
-type request struct {
-	TargetID int32 `json:"target_id"`
-	SourceID int32 `json:"source_id"`
-	Age      int   `json:"new age"`
+type IService interface {
+	Contains(*u.User) bool
+	GetAllUsers(http.ResponseWriter, *http.Request)
+	Create(http.ResponseWriter, *http.Request)
+	DeleteUser(http.ResponseWriter, *http.Request)
+	ChangeAge(http.ResponseWriter, *http.Request)
+	GetFriends(http.ResponseWriter, *http.Request)
+	MakeFriends(http.ResponseWriter, *http.Request)
 }
 
 // TODO postgresql database instead of map
@@ -52,9 +54,11 @@ func (s *service) newId() int32 {
 
 // GetAllUsers func to return all the users in the map
 func (s *service) GetAllUsers(w http.ResponseWriter, _ *http.Request) {
+	// collecting data from the database
+	// here's request to the database that returns list of users
 	for id, user := range s.store {
 		_, err := w.Write([]byte("id: " + strconv.Itoa(int(id)) +
-			"\nUser: " + user.ToString() + "\n"))
+			"\nuser: " + user.ToString() + "\n"))
 		if err != nil {
 			return
 		}
@@ -63,40 +67,17 @@ func (s *service) GetAllUsers(w http.ResponseWriter, _ *http.Request) {
 
 // Create function returns id of user
 func (s *service) Create(w http.ResponseWriter, r *http.Request) {
-	// Bind the request to the struct
-	//var req Request
-	//err := req.Bind(w, r)
-	//if err != nil {
-	//	return
-	//}
-	content, err := ioutil.ReadAll(r.Body)
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			log.Error("Cannot close body")
-		}
-	}(r.Body)
+	var req validators.Request
+	err := req.Bind(r)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Error("Cannot read the data from request")
-		_, err := w.Write([]byte(err.Error()))
-		if err != nil {
-			return
-		}
+		logger.HTTPErrorHandle(w, logger.HTTPErrorHandler{
+			ErrorCode:   http.StatusBadRequest,
+			Description: err.Error(),
+		})
 		return
 	}
 
-	tmpUser := u.NewUser("", 0)
-
-	if err := json.Unmarshal(content, &tmpUser); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err := w.Write([]byte(err.Error()))
-		if err != nil {
-			return
-		}
-		log.Error("Cannot parse data from json")
-		return
-	}
+	tmpUser := u.NewUser(req.Name, req.Age)
 
 	id := s.newId()
 	s.store[id] = &tmpUser
@@ -113,7 +94,7 @@ func (s *service) Create(w http.ResponseWriter, r *http.Request) {
 
 	log.Info("New user: ", id)
 	w.WriteHeader(http.StatusCreated)
-	_, err = w.Write([]byte("\nUser " + tmpUser.Name + " was created\nid:" + strconv.Itoa(int(id)) + "\n"))
+	_, err = w.Write([]byte("\nuser " + tmpUser.Name + " was created\nid:" + strconv.Itoa(int(id)) + "\n"))
 	if err != nil {
 		return
 	}
@@ -121,33 +102,16 @@ func (s *service) Create(w http.ResponseWriter, r *http.Request) {
 
 // ChangeAge to change the age of specific user
 func (s *service) ChangeAge(w http.ResponseWriter, r *http.Request) {
-	// error and requirements checking
-	if r.Method != "PUT" {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-	var req request
-	content, err := ioutil.ReadAll(r.Body)
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			log.Error("Cannot close body")
-		}
-	}(r.Body)
+	var req validators.Request
+	err := req.Bind(r)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		_, err := w.Write([]byte(err.Error()))
-		if err != nil {
-			return
-		}
-		log.Error("Wrong request to change age")
+		logger.HTTPErrorHandle(w, logger.HTTPErrorHandler{
+			ErrorCode:   http.StatusBadRequest,
+			Description: err.Error(),
+		})
 		return
+	}
 
-	}
-	if err := json.Unmarshal(content, &req); err != nil {
-		log.Error("Cannot parse request to change age")
-		return
-	}
 	// parse the header of request
 	vars := mux.Vars(r)
 	tmp, _ := strconv.Atoi(vars["id"])
@@ -162,16 +126,15 @@ func (s *service) ChangeAge(w http.ResponseWriter, r *http.Request) {
 	}
 	// change age doesn't change the age in friends
 	s.store[req.TargetID].SetAge(req.Age)
-	_, err = w.Write([]byte("User's age was updated\n"))
+	_, err = w.Write([]byte("user's age was updated\n"))
 	if err != nil {
 		return
 	}
-	log.Info("User ", req.TargetID, " age has been changed to ", req.Age)
+	log.Info("user ", req.TargetID, " age has been changed to ", req.Age)
 }
 
 // GetFriends of specific user
 func (s *service) GetFriends(w http.ResponseWriter, r *http.Request) {
-	// Here I get the key from the header, instead I wanna get it without ? symbol in the header
 	vars := mux.Vars(r)
 	tmp, _ := strconv.Atoi(vars["id"])
 	id := int32(tmp)
@@ -186,7 +149,7 @@ func (s *service) GetFriends(w http.ResponseWriter, r *http.Request) {
 	// collecting data from the user
 	answer := func(u []*u.User) string {
 		if len(u) == 0 {
-			return "User has no friends\n"
+			return "user has no friends\n"
 		}
 		result := "Friends of " + s.store[id].Name + ":"
 		for _, man := range u {
@@ -203,23 +166,13 @@ func (s *service) GetFriends(w http.ResponseWriter, r *http.Request) {
 
 // MakeFriends make friends from 2 users
 func (s *service) MakeFriends(w http.ResponseWriter, r *http.Request) {
-	content, err := ioutil.ReadAll(r.Body)
+	var data validators.Request
+	err := data.Bind(r)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Error("Cannot parse request data")
-		_, err := w.Write([]byte(err.Error()))
-		if err != nil {
-			return
-		}
-		return
-	}
-	var data request
-	if err := json.Unmarshal(content, &data); err != nil {
-		log.Error("Cannot parse data for making friends")
-		_, err := w.Write([]byte(err.Error()))
-		if err != nil {
-			return
-		} // or w.Write([]byte("Wrong request))
+		logger.HTTPErrorHandle(w, logger.HTTPErrorHandler{
+			ErrorCode:   http.StatusBadRequest,
+			Description: err.Error(),
+		})
 		return
 	}
 
@@ -273,15 +226,13 @@ func (s *service) MakeFriends(w http.ResponseWriter, r *http.Request) {
 
 // DeleteUser from the map
 func (s *service) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	content, err := ioutil.ReadAll(r.Body)
+	var data validators.Request
+	err := data.Bind(r)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		log.Error("Wrong request for deleting user")
-		return
-	}
-	var data request
-	if err := json.Unmarshal(content, &data); err != nil {
-		log.Error("Cannot parse data for deleting user")
+		logger.HTTPErrorHandle(w, logger.HTTPErrorHandler{
+			ErrorCode:   http.StatusBadRequest,
+			Description: err.Error(),
+		})
 		return
 	}
 	// check if this user exists
@@ -298,10 +249,10 @@ func (s *service) DeleteUser(w http.ResponseWriter, r *http.Request) {
 		man.RemoveFriend(*s.store[data.TargetID])
 	}
 	// logging and deleting
-	_, err = w.Write([]byte("User " + s.store[data.TargetID].GetName() + " has been deleted\n"))
+	_, err = w.Write([]byte("user " + s.store[data.TargetID].GetName() + " has been deleted\n"))
 	if err != nil {
 		return
 	}
-	log.Info("User " + s.store[data.TargetID].GetName() + " has been deleted")
+	log.Info("user " + s.store[data.TargetID].GetName() + " has been deleted")
 	delete(s.store, data.TargetID)
 }
