@@ -2,13 +2,26 @@ package server
 
 import (
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 	"net/http"
 	service "user/pkg/service"
 )
 
 // MyHandler defines the routes, returns router
 func MyHandler() *mux.Router {
-	srv := service.NewService()
+	db, err := service.NewPostgresDB(service.Config{
+		Host:     "localhost",
+		Port:     "5432",
+		Username: "postgres",
+		Password: "qwerty",
+		DBName:   "postgres",
+		SSLMode:  "disable",
+	})
+	if err != nil {
+		log.Fatalf("Failed to initialize db: %s", err.Error())
+	}
+	srv := service.NewService(db)
 	router := mux.NewRouter()
 
 	router.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {

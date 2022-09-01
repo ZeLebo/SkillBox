@@ -1,5 +1,9 @@
 To start the services separately need to run commands from cmd/proxy folder
 
+Before starting on the local machine need to up the database
+
+``docker run --name=box -e POSTGRES_PASSWORD='qwerty' -p 5432:5432 -d --rm postgres``
+
 ``go run first.go`` - to run the first service
 
 ``go run second.go`` - to run the second service

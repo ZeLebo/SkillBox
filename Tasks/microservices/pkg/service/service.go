@@ -1,8 +1,9 @@
-// Package service /*
+// Package Service /*
 package service
 
 import (
 	"github.com/gorilla/mux"
+	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
 	"math/rand"
 	"net/http"
@@ -23,16 +24,16 @@ type IService interface {
 }
 
 // TODO postgresql database instead of map
-type service struct {
+type Service struct {
 	store map[int32]*u.User
 }
 
-func NewService() *service {
-	return &service{make(map[int32]*u.User)}
+func NewService(db *sqlx.DB) *Service {
+	return &Service{}
 }
 
 // Contains check if the map Contains the specific user
-func (s *service) Contains(u *u.User) bool {
+func (s *Service) Contains(u *u.User) bool {
 	for _, i := range s.store {
 		if i == u {
 			return true
@@ -42,7 +43,7 @@ func (s *service) Contains(u *u.User) bool {
 }
 
 // Id generator
-func (s *service) newId() int32 {
+func (s *Service) newId() int32 {
 	var id int32
 	// It's limited to 2^31 + 1
 	// Wanted to use hash, but then thought it would be too much
@@ -53,7 +54,7 @@ func (s *service) newId() int32 {
 }
 
 // GetAllUsers func to return all the users in the map
-func (s *service) GetAllUsers(w http.ResponseWriter, _ *http.Request) {
+func (s *Service) GetAllUsers(w http.ResponseWriter, _ *http.Request) {
 	// collecting data from the database
 	// here's request to the database that returns list of users
 	for id, user := range s.store {
@@ -66,7 +67,7 @@ func (s *service) GetAllUsers(w http.ResponseWriter, _ *http.Request) {
 }
 
 // Create function returns id of user
-func (s *service) Create(w http.ResponseWriter, r *http.Request) {
+func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
 	var req validators.Request
 	err := req.Bind(r)
 	if err != nil {
@@ -101,7 +102,7 @@ func (s *service) Create(w http.ResponseWriter, r *http.Request) {
 }
 
 // ChangeAge to change the age of specific user
-func (s *service) ChangeAge(w http.ResponseWriter, r *http.Request) {
+func (s *Service) ChangeAge(w http.ResponseWriter, r *http.Request) {
 	var req validators.Request
 	err := req.Bind(r)
 	if err != nil {
@@ -134,7 +135,7 @@ func (s *service) ChangeAge(w http.ResponseWriter, r *http.Request) {
 }
 
 // GetFriends of specific user
-func (s *service) GetFriends(w http.ResponseWriter, r *http.Request) {
+func (s *Service) GetFriends(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	tmp, _ := strconv.Atoi(vars["id"])
 	id := int32(tmp)
@@ -165,7 +166,7 @@ func (s *service) GetFriends(w http.ResponseWriter, r *http.Request) {
 }
 
 // MakeFriends make friends from 2 users
-func (s *service) MakeFriends(w http.ResponseWriter, r *http.Request) {
+func (s *Service) MakeFriends(w http.ResponseWriter, r *http.Request) {
 	var data validators.Request
 	err := data.Bind(r)
 	if err != nil {
@@ -225,7 +226,7 @@ func (s *service) MakeFriends(w http.ResponseWriter, r *http.Request) {
 }
 
 // DeleteUser from the map
-func (s *service) DeleteUser(w http.ResponseWriter, r *http.Request) {
+func (s *Service) DeleteUser(w http.ResponseWriter, r *http.Request) {
 	var data validators.Request
 	err := data.Bind(r)
 	if err != nil {
