@@ -5,7 +5,6 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"user/configs"
 )
 
@@ -51,6 +50,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		log.Error("Error: ", err.Error())
 	}
 
+	//goland:noinspection GoDeprecation
 	content, err := ioutil.ReadAll(resp.Body)
 	w.WriteHeader(resp.StatusCode)
 	_, err = w.Write(content)
@@ -66,7 +66,10 @@ func handle(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	proxyIP := os.Getenv("PROXY_IP")
+	proxyIP, err := configs.GetIp("proxy")
+	if err != nil {
+		log.Fatalln("Cannot start the proxy server")
+	}
 	http.HandleFunc("/", handle)
 	log.Fatalln(http.ListenAndServe(proxyIP, nil))
 }
