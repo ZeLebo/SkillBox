@@ -1,22 +1,16 @@
 package main
 
 import (
-	env "github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
-	"os"
+	"user/configs"
 	s "user/pkg/server"
 )
 
-func init() {
-	err := env.Load("../../.env")
-	if err != nil {
-		log.Error(err.Error())
-		os.Exit(1)
-	}
-}
-
 func main() {
-	address := os.Getenv("SECOND_IP")
+	address, err := configs.GetIp("second")
+	if err != nil {
+		log.Fatalln("cannot parse config")
+	}
 	server := s.NewServer(address)
 	log.Info("The server is up and running at ", server.Addr, "\n")
 

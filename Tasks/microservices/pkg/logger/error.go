@@ -5,6 +5,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net/http"
 	"os"
+	"path/filepath"
 )
 
 type HTTPErrorHandler struct {
@@ -25,11 +26,31 @@ func HTTPErrorHandle(w http.ResponseWriter, err HTTPErrorHandler) {
 	return
 }
 
+func RootDir() string {
+	ex, err := os.Getwd()
+	if err != nil {
+		log.Fatalf("Cannot parse the working directory")
+	}
+	exPath := filepath.Base(ex)
+	switch exPath {
+	case "microservices":
+		return "logs"
+	case "cmd":
+		return filepath.Join("..", "logs")
+	case "app":
+		return filepath.Join("..", "..", "logs")
+	default:
+		return ""
+	}
+}
+
 func init() {
 	log.SetFormatter(&log.JSONFormatter{})
-	file, err := os.OpenFile("../../logs/logs.log", os.O_WRONLY|os.O_CREATE, 0755)
+	logPath := filepath.Join(RootDir(), "logs.log")
+	file, err := os.OpenFile(logPath, os.O_WRONLY|os.O_CREATE, 0755)
 	if err != nil {
-		file, err = os.Create("../../logs/logs.log")
+		fmt.Println("no such file but why")
+		file, err = os.Create(logPath)
 		if err != nil {
 			fmt.Println(err.Error())
 		}

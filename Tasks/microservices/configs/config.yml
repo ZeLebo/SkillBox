@@ -1,0 +1,4 @@
+port: "localhost:8000"
+first: "localhost:60491"
+second: "localhost:60490"
+proxy: "localhost:60490"

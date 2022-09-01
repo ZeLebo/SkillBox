@@ -1,35 +1,34 @@
 package main
 
 import (
-	env "github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"user/configs"
 )
 
 var counter int
 
-func init() {
-	err := env.Load("../../.env")
-	if err != nil {
-		log.Error(err.Error())
-		os.Exit(1)
-	}
-}
-
 // todo split
 // redirects the output
 func handle(w http.ResponseWriter, r *http.Request) {
-	addr1 := os.Getenv("FIRST_IP")
-	addr2 := os.Getenv("SECOND_IP")
+
 	client := http.Client{}
 	var (
 		resp *http.Response
 		req  *http.Request
-		err  error
 	)
+
+	addr1, err := configs.GetIp("first")
+	if err != nil {
+		log.Fatalln("cannot parse config")
+	}
+	addr2, err := configs.GetIp("second")
+	if err != nil {
+		log.Fatalln("cannot parse config")
+	}
 
 	if counter == 0 {
 		dest := "http://" + addr1 + r.URL.Path
