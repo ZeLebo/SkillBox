@@ -12,7 +12,7 @@ func main() {
 		log.Fatalln("Cannot parse config")
 	}
 	server := s.NewServer(address)
-	log.Info("The server is up and running at ", server.Addr, "\n")
+	log.Info("The server is up and running at ", server.Addr)
 
 	// signal handler for correct shutdown
 	done := make(chan bool)
