@@ -10,8 +10,6 @@ import (
 
 var counter int
 
-// todo split
-// redirects the output
 func handle(w http.ResponseWriter, r *http.Request) {
 
 	client := http.Client{}
