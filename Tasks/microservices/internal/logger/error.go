@@ -55,6 +55,6 @@ func init() {
 			fmt.Println(err.Error())
 		}
 	}
-	fmt.Println(file)
-	//log.SetOutput(file)
+	//fmt.Println(file)
+	log.SetOutput(file)
 }

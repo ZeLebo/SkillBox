@@ -6,7 +6,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	user "user/pkg/user"
+	user "user/internal/user"
 )
 
 // Request struct to parse the request from user

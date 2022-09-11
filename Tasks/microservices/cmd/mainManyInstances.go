@@ -9,7 +9,7 @@ import (
 	"os"
 	"strconv"
 	"user/configs"
-	s "user/pkg/server"
+	s "user/internal/server"
 )
 
 // the same as main, but you can decide how many instances of server you want

@@ -3,7 +3,7 @@ package main
 import (
 	log "github.com/sirupsen/logrus"
 	"user/configs"
-	s "user/pkg/server"
+	s "user/internal/server"
 )
 
 func main() {

@@ -8,9 +8,9 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
-	"user/pkg/logger"
-	"user/pkg/service/validators"
-	u "user/pkg/user"
+	"user/internal/logger"
+	"user/internal/service/validators"
+	u "user/internal/user"
 )
 
 type IService interface {

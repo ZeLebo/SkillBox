@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"net/http"
 	"os"
-	service "user/pkg/service"
+	service "user/internal/service"
 )
 
 // MyHandler defines the routes, returns router
