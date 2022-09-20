@@ -3,11 +3,11 @@ package service
 
 import (
 	"github.com/gorilla/mux"
-	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
 	"math/rand"
 	"net/http"
 	"strconv"
+	"user/internal/database"
 	"user/internal/logger"
 	"user/internal/service/validators"
 	u "user/internal/user"
@@ -28,7 +28,7 @@ type Service struct {
 	store map[int32]*u.User
 }
 
-func NewService(db *sqlx.DB) *Service {
+func NewService(client *database.Client) *Service {
 	return &Service{}
 }
 

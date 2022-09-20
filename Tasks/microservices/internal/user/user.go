@@ -40,17 +40,17 @@ func (u *User) ToString() string {
 }
 
 // GetName returns the name of the user
-func (u User) GetName() string {
+func (u *User) GetName() string {
 	return u.Name
 }
 
 // GetAge returns the age of the user
-func (u User) GetAge() int {
+func (u *User) GetAge() int {
 	return u.Age
 }
 
 // GetFriends returns the friends of the user
-func (u User) GetFriends() []*User {
+func (u *User) GetFriends() []*User {
 	return u.Friends
 }
 

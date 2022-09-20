@@ -8,6 +8,8 @@ import (
 	"github.com/spf13/viper"
 	"net/http"
 	"os"
+	"user/configs"
+	"user/internal/database"
 	service "user/internal/service"
 )
 
@@ -16,7 +18,7 @@ func MyHandler() *mux.Router {
 	if err := godotenv.Load(); err != nil {
 		log.Fatalf("Cannot read .env config %s", err.Error())
 	}
-	db, err := service.NewPostgresDB(service.Config{
+	db, err := database.NewClient(&configs.DBConfig{
 		Host:     viper.GetString("db.host"),
 		Port:     viper.GetString("db.port"),
 		Username: viper.GetString("db.username"),
