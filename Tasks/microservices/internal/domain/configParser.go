@@ -1,4 +1,4 @@
-package configs
+package domain
 
 import (
 	"errors"
@@ -11,7 +11,7 @@ import (
 
 func init() {
 	if err := InitConfig(); err != nil {
-		log.Fatalf("error initializing configs: %s", err.Error())
+		log.Fatalf("error initializing domain: %s", err.Error())
 	}
 }
 
@@ -23,11 +23,11 @@ func RootDir() string {
 	exPath := filepath.Base(ex)
 	switch exPath {
 	case "microservices":
-		return "configs"
+		return filepath.Join("internal", "domain")
 	case "cmd":
-		return filepath.Join("..", "configs")
+		return filepath.Join("..", "internal", "domain")
 	case "app":
-		return filepath.Join("..", "..", "configs")
+		return filepath.Join("..", "..", "internal", "domain")
 	default:
 		fmt.Println(exPath)
 		return ""
@@ -35,9 +35,8 @@ func RootDir() string {
 }
 
 func InitConfig() error {
-	// find configs folder
+	// find domain folder
 	viper.AddConfigPath(RootDir())
-
 	viper.SetConfigName("config")
 	return viper.ReadInConfig()
 }
@@ -48,4 +47,15 @@ func GetIp(ip string) (string, error) {
 		return "", errors.New("cannot parse data from config")
 	}
 	return res, nil
+}
+
+func GetDatabaseConfig() *DBConfig {
+	return &DBConfig{
+		Host:     viper.GetString("db.host"),
+		Port:     viper.GetString("db.port"),
+		Username: viper.GetString("db.username"),
+		Password: viper.GetString("db.password"),
+		DBName:   viper.GetString("db.dbname"),
+		SSLMode:  viper.GetString("db.sslmode"),
+	}
 }

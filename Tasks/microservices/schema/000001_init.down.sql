@@ -1,2 +1,0 @@
-DROP TABLE Friends;
-DROP TABLE USERS;

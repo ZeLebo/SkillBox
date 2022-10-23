@@ -4,8 +4,8 @@ second: "localhost:60492"
 proxy: "localhost:60490"
 
 db:
-  username: "postgres"
+  username: "admin"
+  password: "admin"
   host: "localhost"
-  dbname: "postgres"
-  port: "5432"
-  sslmode: "disable"
+  dbname: "microservices"
+  port: "5430"

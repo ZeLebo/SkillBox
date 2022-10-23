@@ -1,259 +1,116 @@
-// Package Service /*
 package service
 
 import (
-	"github.com/gorilla/mux"
-	log "github.com/sirupsen/logrus"
-	"math/rand"
-	"net/http"
-	"strconv"
+	"log"
 	"user/internal/database"
-	"user/internal/logger"
-	"user/internal/service/validators"
+	"user/internal/domain"
 	u "user/internal/user"
 )
 
-type IService interface {
-	Contains(*u.User) bool
-	GetAllUsers(http.ResponseWriter, *http.Request)
-	Create(http.ResponseWriter, *http.Request)
-	DeleteUser(http.ResponseWriter, *http.Request)
-	ChangeAge(http.ResponseWriter, *http.Request)
-	GetFriends(http.ResponseWriter, *http.Request)
-	MakeFriends(http.ResponseWriter, *http.Request)
-}
-
-// TODO postgresql database instead of map
 type Service struct {
-	store map[int32]*u.User
+	client *database.Client
+	logger *log.Logger
 }
 
-func NewService(client *database.Client) *Service {
-	return &Service{}
-}
-
-// Contains check if the map Contains the specific user
-func (s *Service) Contains(u *u.User) bool {
-	for _, i := range s.store {
-		if i == u {
-			return true
-		}
+func NewService(client *database.Client, logger *log.Logger) *Service {
+	return &Service{
+		client: client,
+		logger: logger,
 	}
-	return false
-}
-
-// Id generator
-func (s *Service) newId() int32 {
-	var id int32
-	// It's limited to 2^31 + 1
-	// Wanted to use hash, but then thought it would be too much
-	for s.store[id+1] != nil {
-		id = rand.Int31()
-	}
-	return id + 1
 }
 
 // GetAllUsers func to return all the users in the map
-func (s *Service) GetAllUsers(w http.ResponseWriter, _ *http.Request) {
-	// collecting data from the database
-	// here's request to the database that returns list of users
-	for id, user := range s.store {
-		_, err := w.Write([]byte("id: " + strconv.Itoa(int(id)) +
-			"\nuser: " + user.ToString() + "\n"))
-		if err != nil {
-			return
-		}
+func (s *Service) GetAllUsers(_ *domain.Request) ([]u.User, error) {
+	users, err := s.client.GetUsers()
+	if err != nil {
+		return nil, err
 	}
+	return users, nil
 }
 
 // Create function returns id of user
-func (s *Service) Create(w http.ResponseWriter, r *http.Request) {
-	var req validators.Request
-	err := req.Bind(r)
-	if err != nil {
-		logger.HTTPErrorHandle(w, logger.HTTPErrorHandler{
-			ErrorCode:   http.StatusBadRequest,
-			Description: err.Error(),
-		})
-		return
+func (s *Service) Create(req *domain.Request) (int, error) {
+	user := database.Model{
+		Name: req.Name,
+		Age:  req.Age,
 	}
 
-	tmpUser := u.NewUser(req.Name, req.Age)
+	id, err := s.client.CreateUser(user)
+	if err != nil {
+		return 0, err
+	}
+	// put the friends in the database if they are not exist
+	for _, friend := range req.Friends {
+		user = database.Model{
+			Name: friend.Name,
+			Age:  friend.Age,
+		}
 
-	id := s.newId()
-	s.store[id] = &tmpUser
-
-	// What if friends are new users? -> make new users
-	func(u []*u.User) {
-		for _, man := range u {
-			if !s.Contains(man) {
-				newId := s.newId()
-				s.store[newId] = man
+		friendId := s.client.GetUserID(user)
+		if friendId == 0 {
+			friendId, err = s.client.CreateUser(user)
+			if err != nil {
+				return 0, err
 			}
 		}
-	}(s.store[id].GetFriends())
-
-	log.Info("New user: ", id)
-	w.WriteHeader(http.StatusCreated)
-	_, err = w.Write([]byte("\nuser " + tmpUser.Name + " was created\nid:" + strconv.Itoa(int(id)) + "\n"))
-	if err != nil {
-		return
+		// add id and friend id to the friend table
+		err = s.client.MakeFriends(id, friendId)
+		if err != nil {
+			return 0, err
+		}
 	}
+	return id, nil
 }
 
 // ChangeAge to change the age of specific user
-func (s *Service) ChangeAge(w http.ResponseWriter, r *http.Request) {
-	var req validators.Request
-	err := req.Bind(r)
+func (s *Service) ChangeAge(req *domain.Request) error {
+	err := s.client.ChangeAge(req.TargetID, req.Age)
 	if err != nil {
-		logger.HTTPErrorHandle(w, logger.HTTPErrorHandler{
-			ErrorCode:   http.StatusBadRequest,
-			Description: err.Error(),
-		})
-		return
+		return err
 	}
-
-	// parse the header of request
-	vars := mux.Vars(r)
-	tmp, _ := strconv.Atoi(vars["id"])
-	req.TargetID = int32(tmp)
-
-	if _, ok := s.store[req.TargetID]; !ok {
-		_, err := w.Write([]byte("No such user"))
-		if err != nil {
-			return
-		}
-		return
-	}
-	// change age doesn't change the age in friends
-	s.store[req.TargetID].SetAge(req.Age)
-	_, err = w.Write([]byte("user's age was updated\n"))
-	if err != nil {
-		return
-	}
-	log.Info("user ", req.TargetID, " age has been changed to ", req.Age)
+	return nil
 }
 
 // GetFriends of specific user
-func (s *Service) GetFriends(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	tmp, _ := strconv.Atoi(vars["id"])
-	id := int32(tmp)
-
-	if _, ok := s.store[id]; !ok {
-		_, err := w.Write([]byte("No such user"))
-		if err != nil {
-			return
-		}
-		return
-	}
-	// collecting data from the user
-	answer := func(u []*u.User) string {
-		if len(u) == 0 {
-			return "user has no friends\n"
-		}
-		result := "Friends of " + s.store[id].Name + ":"
-		for _, man := range u {
-			result += "\n" + man.ToString()
-		}
-		return result + "\n"
-	}(s.store[id].GetFriends())
-
-	_, err := w.Write([]byte(answer))
+func (s *Service) GetFriends(req *domain.Request) ([]u.User, error) {
+	// return the list of friends
+	friends, err := s.client.GetFriends(req.TargetID)
 	if err != nil {
-		return
+		return nil, err
 	}
+	return friends, nil
 }
 
 // MakeFriends make friends from 2 users
-func (s *Service) MakeFriends(w http.ResponseWriter, r *http.Request) {
-	var data validators.Request
-	err := data.Bind(r)
+func (s *Service) MakeFriends(req *domain.Request) error {
+	// add id1 to id2 friends
+	err := s.client.MakeFriends(req.TargetID, req.SourceID)
 	if err != nil {
-		logger.HTTPErrorHandle(w, logger.HTTPErrorHandler{
-			ErrorCode:   http.StatusBadRequest,
-			Description: err.Error(),
-		})
-		return
+		return err
 	}
-
-	// id cannot be < 1, so if we have 0 it means user hasn't provided us the fields
-	if data.TargetID == 0 || data.SourceID == 0 {
-		w.WriteHeader(http.StatusBadRequest)
-		_, err := w.Write([]byte("You need to provide the id's of users"))
-		if err != nil {
-			return
-		}
-		return
-	}
-
-	if data.TargetID == data.SourceID {
-		_, err := w.Write([]byte("The same user"))
-		if err != nil {
-			return
-		}
-		return
-	}
-
-	// We need to store the previous copy of the user
-	// to exclude the collision
-	var tmp u.User
-	tmp.Name = s.store[data.TargetID].GetName()
-	tmp.Age = s.store[data.TargetID].GetAge()
-	tmp.Friends = s.store[data.TargetID].GetFriends()
-
-	// AddFriends returns true if succeed to add a new user
-	// so if true, we can add another user to friends list
-	if s.store[data.TargetID].AddFriend(s.store[data.SourceID]) {
-		s.store[data.SourceID].AddFriend(&tmp)
-	} else {
-		// if false -> we already have such user in the map
-		_, err := w.Write([]byte("Users are already friends\n"))
-		if err != nil {
-			return
-		}
-		return
-	}
-
-	// just printing and logging
-	_, err = w.Write([]byte("Users " + s.store[data.TargetID].GetName() + " and " +
-		s.store[data.SourceID].GetName() + " are now friends\n"))
-	if err != nil {
-		return
-	}
-	log.Info("Users ", s.store[data.TargetID].GetName()+" and "+
-		s.store[data.SourceID].GetName(), " are now friends")
+	return nil
 }
 
-// DeleteUser from the map
-func (s *Service) DeleteUser(w http.ResponseWriter, r *http.Request) {
-	var data validators.Request
-	err := data.Bind(r)
+func (s *Service) DeleteUser(req *domain.Request) error {
+	err := s.client.DeleteUser(req.TargetID)
 	if err != nil {
-		logger.HTTPErrorHandle(w, logger.HTTPErrorHandler{
-			ErrorCode:   http.StatusBadRequest,
-			Description: err.Error(),
-		})
-		return
+		return err
 	}
-	// check if this user exists
-	if _, ok := s.store[data.TargetID]; !ok {
-		_, err := w.Write([]byte("No such user"))
-		if err != nil {
-			return
-		}
-		return
-	}
+	return nil
+}
 
-	// delete from all the friends
-	for _, man := range s.store[data.TargetID].GetFriends() {
-		man.RemoveFriend(*s.store[data.TargetID])
+func (s *Service) CheckUser(req *domain.Request) bool {
+	user := database.Model{
+		Name: req.Name,
+		Age:  req.Age,
 	}
-	// logging and deleting
-	_, err = w.Write([]byte("user " + s.store[data.TargetID].GetName() + " has been deleted\n"))
+	return s.client.CheckUser(user)
+}
+
+func (s *Service) GetUserByID(id int) (u.User, error) {
+	user, err := s.client.GetUserByID(id)
 	if err != nil {
-		return
+		return u.User{}, err
 	}
-	log.Info("user " + s.store[data.TargetID].GetName() + " has been deleted")
-	delete(s.store, data.TargetID)
+	return user, nil
 }

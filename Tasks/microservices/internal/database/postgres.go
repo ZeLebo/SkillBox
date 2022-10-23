@@ -2,101 +2,169 @@ package database
 
 import (
 	"fmt"
-	"github.com/jmoiron/sqlx"
-	"user/configs"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
+	"log"
+	"user/internal/domain"
 	u "user/internal/user"
 )
 
-func NewPostgresDB(cfg *configs.DBConfig) (*sqlx.DB, error) {
-	db, err := sqlx.Open("postgres", fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
-		cfg.Host, cfg.Port, cfg.Username, cfg.DBName, cfg.Password, cfg.SSLMode))
+type Client struct {
+	db     *gorm.DB
+	logger *log.Logger
+	*domain.DBConfig
+}
+
+func NewClient(cfg *domain.DBConfig, logger *log.Logger) (*Client, error) {
+	client := &Client{
+		DBConfig: cfg,
+		logger:   logger,
+	}
+	db, err := client.Connect()
 	if err != nil {
 		return nil, err
 	}
-	err = db.Ping()
+	client.db = db
+	return client, nil
+}
+
+func (c *Client) dsn() string {
+	return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s",
+		c.Host, c.Port, c.Username, c.Password, c.DBName)
+}
+
+func (c *Client) Connect() (*gorm.DB, error) {
+	db, err := gorm.Open(postgres.Open(c.dsn()), &gorm.Config{})
 	if err != nil {
 		return nil, err
+	}
+
+	if err = db.AutoMigrate(&Model{}); err != nil {
+		return nil, fmt.Errorf("cannot migrate: %w", err)
+	}
+	if err = db.AutoMigrate(&Friend{}); err != nil {
+		return nil, fmt.Errorf("cannot migrate: %w", err)
 	}
 	return db, nil
 }
 
-type Client struct {
-	db *sqlx.DB
-}
-
-func NewClient(cfg *configs.DBConfig) (*Client, error) {
-	db, err := NewPostgresDB(cfg)
-	if err != nil {
+func (c *Client) GetUsers() ([]u.User, error) {
+	var users []Model
+	if err := c.db.Find(&users).Error; err != nil {
 		return nil, err
 	}
-	return &Client{db: db}, nil
+	var result []u.User
+	for _, user := range users {
+		result = append(result, u.User{
+			ID:   user.ID,
+			Name: user.Name,
+			Age:  user.Age,
+		})
+	}
+	return result, nil
 }
 
-func (client *Client) Close() error {
-	return client.db.Close()
+func (c *Client) CreateUser(model Model) (int, error) {
+	if err := c.db.Create(&model).Error; err != nil {
+		return 0, err
+	}
+	var id int
+	if err := c.db.Model(&Model{}).Where("name = ? AND age = ?", model.Name, model.Age).Select("id").First(&id).Error; err != nil {
+		return 0, err
+	}
+	return id, nil
 }
 
-func (client *Client) GetDB() *sqlx.DB {
-	return client.db
+func (c *Client) DeleteUser(id int) error {
+	// delete from models the record with id = id
+	if err := c.db.Delete(&Model{}, id).Error; err != nil {
+		return err
+	}
+	// delete all the relations in friends table
+	if err := c.db.Where("friend1 = ? OR friend2 = ?", id, id).Delete(&Friend{}).Error; err != nil {
+		return err
+	}
+	return nil
 }
 
-func (client *Client) GetUsers() ([]u.User, error) {
-	var users []u.User
-	err := client.db.Select(&users, "SELECT * FROM users")
-	if err != nil {
+func (c *Client) ChangeAge(id, age int) error {
+	if err := c.db.Model(&Model{}).Where("id = ?", id).Update("age", age).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) MakeFriends(id1, id2 int) error {
+	// add id1 to id2 friends
+	if err := c.db.Create(&Friend{
+		First:  id1,
+		Second: id2,
+	}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (c *Client) GetFriends(id int) ([]u.User, error) {
+	var friendsIdFirst []int
+
+	// get all unique values from table friends where id == friend1 or id == friend2
+	//if err := c.db.Model(&Friend{}).Where("friend1 = ? OR friend2 = ?", id, id).Select("DISTINCT friend1, friend2").Find(&friendsIdFirst).Error; err != nil {
+	//	return nil, err
+	//}
+
+	// check all the values where first is id
+	if err := c.db.Model(&Friend{}).Where("friend1 = ?", id).Select("friend2").Find(&friendsIdFirst).Error; err != nil {
 		return nil, err
 	}
-	return users, nil
-}
-
-func (client *Client) CreateUser(user u.User) error {
-	// add new user to the database with unique id, age and name
-	_, err := client.db.Exec("INSERT INTO users (id, age, name) VALUES ($1, $2, $3)", user.ID, user.Age, user.Name)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (client *Client) DeleteUser(id int) error {
-	_, err := client.db.Exec("DELETE FROM users WHERE id=$1", id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (client *Client) ChangeAge(id, age int) error {
-	_, err := client.db.Exec("UPDATE users SET age=$1 WHERE id=$2", age, id)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (client *Client) MakeFriends(id1, id2 int) error {
-	_, err := client.db.Exec("INSERT INTO friends (id1, id2) VALUES ($1, $2)", id1, id2)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func (client *Client) GetFriends(id int) ([]u.User, error) {
-	var users []u.User
-	// maybe doesn't work
-	err := client.db.Select(&users, "SELECT * FROM users WHERE id IN (SELECT id1 FROM friends WHERE id2=$1)", id)
-	if err != nil {
+	var friendsIdSecond []int
+	// check all the values where second is id
+	if err := c.db.Model(&Friend{}).Where("friend2 = ?", id).Select("friend1").Find(&friendsIdSecond).Error; err != nil {
 		return nil, err
 	}
-	return users, nil
+	type null struct{}
+	friendsId := make(map[int]null)
+	for _, id := range friendsIdFirst {
+		friendsId[id] = null{}
+	}
+	for _, id := range friendsIdSecond {
+		friendsId[id] = null{}
+	}
+
+	var friends []u.User
+	for id := range friendsId {
+		newFriend, err := c.GetUserByID(id)
+		if err == nil {
+			friends = append(friends, newFriend)
+		}
+	}
+	return friends, nil
 }
 
-func (client *Client) GetUserByID(id int) (u.User, error) {
-	var user u.User
-	err := client.db.Get(&user, "SELECT * FROM users WHERE id=$1", id)
-	if err != nil {
-		return user, err
+func (c *Client) CheckUser(user Model) bool {
+	var model Model
+	if err := c.db.Where("name = ? AND age = ?", user.Name, user.Age).First(&model).Error; err != nil {
+		return false
 	}
-	return user, nil
+	return true
+}
+
+func (c *Client) GetUserByID(id int) (u.User, error) {
+	var user Model
+	if err := c.db.First(&user, id).Error; err != nil {
+		return u.User{}, err
+	}
+	return u.User{
+		ID:   user.ID,
+		Name: user.Name,
+		Age:  user.Age,
+	}, nil
+}
+
+func (c *Client) GetUserID(user Model) int {
+	var id int
+	if err := c.db.Model(&Model{}).Where("name = ? AND age = ?", user.Name, user.Age).Select("id").First(&id).Error; err != nil {
+		return 0
+	}
+	return id
 }

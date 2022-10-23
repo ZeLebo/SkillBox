@@ -1,30 +1,56 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
-	"user/configs"
-	s "user/internal/server"
+	"github.com/gorilla/mux"
+	"log"
+	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"user/cmd/handlers"
+	"user/internal/database"
+	"user/internal/domain"
+	"user/internal/service"
 )
 
 func main() {
-	address, err := configs.GetIp("second")
+	logger := log.Default()
+	cfg := domain.GetDatabaseConfig()
+
+	client, err := database.NewClient(cfg, logger)
 	if err != nil {
-		log.Fatalln("cannot parse config")
+		log.Fatalf("error initializing database: %s", err.Error())
 	}
-	server := s.NewServer(address)
-	log.Info("The server is up and running at ", server.Addr)
 
-	// signal handler for correct shutdown
-	done := make(chan bool)
+	handlerService := service.NewService(client, logger)
+
+	mainRouter := mux.NewRouter()
+	handler := handlers.NewRequestHandler(handlerService, logger)
+
+	handler.Routes(mainRouter)
+
+	address, err := domain.GetIp("second")
+	if err != nil {
+		log.Fatalln("Cannot parse config")
+	}
 	go func() {
-		err := server.ListenAndServe()
+		err := http.ListenAndServe(address, mainRouter)
 		if err != nil {
-			log.Info(err.Error())
+			logger.Fatal("Can't start server" + err.Error())
 		}
-		done <- true
 	}()
+	logger.Printf("Server started")
+	signalChan := make(chan os.Signal, 1)
 
-	server.WaitShutdown()
+	signal.Notify(
+		signalChan,
+		syscall.SIGHUP,
+		syscall.SIGINT,
+		syscall.SIGTERM,
+		syscall.SIGQUIT,
+	)
+	<-signalChan
+	logger.Println("Shutting down server...")
 
-	<-done
+	defer os.Exit(0)
 }

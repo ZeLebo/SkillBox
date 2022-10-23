@@ -1,4 +1,4 @@
-package configs
+package domain
 
 type DBConfig struct {
 	Host     string

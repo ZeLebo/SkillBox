@@ -5,7 +5,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"user/configs"
+	"user/internal/domain"
 )
 
 var counter int
@@ -18,11 +18,11 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		req  *http.Request
 	)
 
-	addr1, err := configs.GetIp("first")
+	addr1, err := domain.GetIp("first")
 	if err != nil {
 		log.Fatalln("cannot parse config")
 	}
-	addr2, err := configs.GetIp("second")
+	addr2, err := domain.GetIp("second")
 	if err != nil {
 		log.Fatalln("cannot parse config")
 	}
@@ -31,6 +31,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 		dest := "http://" + addr1 + r.URL.Path
 		req, err = http.NewRequest(r.Method, dest, r.Body)
 		if err != nil {
+
 			return
 		}
 		counter++
@@ -64,7 +65,7 @@ func handle(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	proxyIP, err := configs.GetIp("proxy")
+	proxyIP, err := domain.GetIp("proxy")
 	if err != nil {
 		log.Fatalln("Cannot start the proxy server")
 	}
