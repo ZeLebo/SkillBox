@@ -43,10 +43,6 @@ type Error struct {
 	statusCode int
 }
 
-/*func (e Error) Error() error {
-	return e.err
-}*/
-
 func (e Error) Error() string {
 	return e.err.Error()
 }

@@ -2,7 +2,6 @@ package domain
 
 import (
 	"errors"
-	"fmt"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
 	"os"
@@ -22,15 +21,18 @@ func RootDir() string {
 	}
 	exPath := filepath.Base(ex)
 	switch exPath {
+	case "domain":
+		return "."
 	case "microservices":
 		return filepath.Join("internal", "domain")
 	case "cmd":
 		return filepath.Join("..", "internal", "domain")
 	case "app":
 		return filepath.Join("..", "..", "internal", "domain")
+	case "database":
+		return filepath.Join("..", "domain")
 	default:
-		fmt.Println(exPath)
-		return ""
+		return exPath
 	}
 }
 
