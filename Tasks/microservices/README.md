@@ -1,7 +1,7 @@
 ### To start up the database:
 ```docker-compose up```
 
-### To start the services separately need to run commands from cmd/proxy folder:
+### To start the services separately need to run the following commands:
 
 ```go run cmd/app/first.go```
 
