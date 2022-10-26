@@ -8,7 +8,7 @@ import (
 )
 
 type Service struct {
-	client *database.Client
+	client database.IClient
 	logger *log.Logger
 }
 

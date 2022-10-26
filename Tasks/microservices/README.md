@@ -1,3 +1,9 @@
+### You can start many instances of app with proxy:
+
+```go run cmd/mainManyInstances.go <number of servers>```
+
+It will start the amount of servers and proxy
+
 ### To start up the database:
 ```docker-compose up```
 
@@ -8,9 +14,3 @@
 ```go run cmd/app/second.go```
 
 ```go run cmd/app/proxy.go```
-
-### Or you can start many instances of app with proxy:
-
-```go run cmd/mainManyInstances.go <number of servers>```
-
-

@@ -20,19 +20,16 @@ func RootDir() string {
 		log.Fatalf("Cannot parse the working directory")
 	}
 	exPath := filepath.Base(ex)
+	// navigate to microservices/configs
 	switch exPath {
-	case "domain":
+	case "configs":
 		return "."
 	case "microservices":
-		return filepath.Join("internal", "domain")
+		return filepath.Join("configs")
 	case "cmd":
-		return filepath.Join("..", "internal", "domain")
-	case "app":
-		return filepath.Join("..", "..", "internal", "domain")
-	case "database":
-		return filepath.Join("..", "domain")
+		return filepath.Join("..", "configs")
 	default:
-		return exPath
+		return filepath.Join("..", "..", "configs")
 	}
 }
 

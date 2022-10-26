@@ -1,0 +1,11 @@
+port: "localhost:8000"
+first: "localhost:60491"
+second: "localhost:60492"
+proxy: "localhost:60490"
+
+db:
+  username: "admin"
+  password: "admin"
+  host: "localhost"
+  dbname: "microservices"
+  port: "5430"

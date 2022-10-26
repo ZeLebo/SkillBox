@@ -1,4 +1,4 @@
-package main
+package app
 
 import (
 	"github.com/gorilla/mux"
@@ -7,13 +7,13 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
-	"user/cmd/handlers"
 	"user/internal/database"
 	"user/internal/domain"
+	"user/internal/handlers"
 	"user/internal/service"
 )
 
-func main() {
+func StartServer(port string, signalChan chan os.Signal) {
 	logger := log.Default()
 	cfg := domain.GetDatabaseConfig()
 
@@ -29,10 +29,7 @@ func main() {
 
 	handler.Routes(mainRouter)
 
-	address, err := domain.GetIp("first")
-	if err != nil {
-		log.Fatalln("Cannot parse config")
-	}
+	address := "localhost:" + port
 	go func() {
 		err := http.ListenAndServe(address, mainRouter)
 		if err != nil {
@@ -40,7 +37,6 @@ func main() {
 		}
 	}()
 	logger.Printf("Server started")
-	signalChan := make(chan os.Signal, 1)
 
 	signal.Notify(
 		signalChan,

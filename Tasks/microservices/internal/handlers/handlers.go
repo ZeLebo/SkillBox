@@ -26,12 +26,13 @@ func NewRequestHandler(service *service.Service, logger *log.Logger) *RequestHan
 func (h *RequestHandler) Routes(r *mux.Router) {
 	apiRoute := r.PathPrefix("/api/v1").Subrouter()
 
-	apiRoute.Path("/get").Methods(http.MethodGet).HandlerFunc(myhttp.Handle(h.logger)(h.GetAllUsers))
-	apiRoute.Path("/create").Methods(http.MethodPost).HandlerFunc(myhttp.Handle(h.logger)(h.Create))
-	apiRoute.Path("/make_friends").Methods(http.MethodPost).HandlerFunc(myhttp.Handle(h.logger)(h.MakeFriends))
-	apiRoute.Path("/user").Methods(http.MethodDelete).HandlerFunc(myhttp.Handle(h.logger)(h.DeleteUser))
+	apiRoute.Path("/users").Methods(http.MethodGet).HandlerFunc(myhttp.Handle(h.logger)(h.GetAllUsers))
+	apiRoute.Path("/users").Methods(http.MethodPost).HandlerFunc(myhttp.Handle(h.logger)(h.Create))
+	apiRoute.Path("/users").Methods(http.MethodDelete).HandlerFunc(myhttp.Handle(h.logger)(h.DeleteUser))
 
 	apiRoute.Path("/{id:[0-9]+}").Methods(http.MethodPut).HandlerFunc(myhttp.Handle(h.logger)(h.ChangeAge))
+
+	apiRoute.Path("/friends").Methods(http.MethodPost).HandlerFunc(myhttp.Handle(h.logger)(h.MakeFriends))
 	apiRoute.Path("/friends/{id:[0-9]+}").Methods(http.MethodGet).HandlerFunc(myhttp.Handle(h.logger)(h.GetFriends))
 }
 
@@ -87,11 +88,6 @@ func (h *RequestHandler) ChangeAge(_ http.ResponseWriter, r *http.Request) myhtt
 	err = validator.ValidateChangeAge(&req)
 	if err != nil {
 		return myhttp.BadRequest(err)
-	}
-	// check if the user exists
-	exist := h.service.CheckUser(&req)
-	if !exist {
-		return myhttp.BadRequest(fmt.Errorf("user does not exist"))
 	}
 	// update the age
 	err = h.service.ChangeAge(&req)

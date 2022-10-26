@@ -108,12 +108,6 @@ func (c *Client) MakeFriends(id1, id2 int) error {
 func (c *Client) GetFriends(id int) ([]u.User, error) {
 	var friendsIdFirst []int
 
-	// get all unique values from table friends where id == friend1 or id == friend2
-	//if err := c.db.Model(&Friend{}).Where("friend1 = ? OR friend2 = ?", id, id).Select("DISTINCT friend1, friend2").Find(&friendsIdFirst).Error; err != nil {
-	//	return nil, err
-	//}
-
-	// check all the values where first is id
 	if err := c.db.Model(&Friend{}).Where("friend1 = ?", id).Select("friend2").Find(&friendsIdFirst).Error; err != nil {
 		return nil, err
 	}

@@ -66,6 +66,11 @@ func (v *Validator) createStructValidator(sl validator.StructLevel) {
 	if req.Age < 0 {
 		sl.ReportError(req.Age, "age", "age", "age", "")
 	}
+	if req.Age > 200 {
+		// Ну мало ли
+		sl.ReportError(req.Age, "age", "age", "age", "")
+
+	}
 	if req.Name == "" {
 		sl.ReportError(req.Name, "name", "name", "name", "")
 	}

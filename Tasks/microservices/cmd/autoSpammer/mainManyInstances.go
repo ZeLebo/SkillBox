@@ -1,4 +1,4 @@
-// the file suppossed to run lots of servers and proxy
+// make package main, if you want to use it
 package main
 
 import (
@@ -11,28 +11,21 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
-	"user/cmd/handlers"
 	"user/internal/database"
 	"user/internal/domain"
+	"user/internal/handlers"
 	"user/internal/service"
 )
 
 // the same as main, but you can decide how many instances of server you want
 // run this file with int CLI
-func spawnServers(amount int, shutdown chan os.Signal) {
+func spawnServers(amount int, shutdown chan os.Signal, client *database.Client, logger *log.Logger) {
 	for i := 0; i < amount; i++ {
 		i := i
 		go func() {
 			port := 60491 + i
 			address := "localhost:" + strconv.Itoa(port)
 			fmt.Println(address)
-			logger := log.Default()
-			cfg := domain.GetDatabaseConfig()
-
-			client, err := database.NewClient(cfg, logger)
-			if err != nil {
-				log.Fatalf("error initializing database: %s", err.Error())
-			}
 
 			handlerService := service.NewService(client, logger)
 
@@ -66,9 +59,16 @@ func main() {
 	if err != nil {
 		log.Fatal("Cannot parse the command line arguments")
 	}
+	logger := log.Default()
+	cfg := domain.GetDatabaseConfig()
+
+	client, err := database.NewClient(cfg, logger)
+	if err != nil {
+		log.Fatalf("error initializing database: %s", err.Error())
+	}
 
 	shutdown := make(chan os.Signal, amount)
-	spawnServers(amount, shutdown)
+	spawnServers(amount, shutdown, client, logger)
 
 	proxyIP, err := domain.GetIp("proxy")
 	if err != nil {
@@ -94,8 +94,7 @@ func main() {
 	for i := 0; i < amount; i++ {
 		shutdown <- os.Interrupt
 	}
-	log.Fatalln(http.ListenAndServe(proxyIP, nil))
-
+	//log.Fatalln(http.ListenAndServe(proxyIP, nil))
 }
 
 func handle(w http.ResponseWriter, r *http.Request) {
