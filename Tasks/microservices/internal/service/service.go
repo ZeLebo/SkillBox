@@ -8,7 +8,7 @@ import (
 )
 
 type Service struct {
-	client database.IClient
+	client ClientInterface
 	logger *log.Logger
 }
 
@@ -30,7 +30,7 @@ func (s *Service) GetAllUsers(_ *domain.Request) ([]u.User, error) {
 
 // Create function returns id of user
 func (s *Service) Create(req *domain.Request) (int, error) {
-	user := database.Model{
+	user := u.User{
 		Name: req.Name,
 		Age:  req.Age,
 	}
@@ -41,7 +41,7 @@ func (s *Service) Create(req *domain.Request) (int, error) {
 	}
 	// put the friends in the database if they are not exist
 	for _, friend := range req.Friends {
-		user = database.Model{
+		user = u.User{
 			Name: friend.Name,
 			Age:  friend.Age,
 		}
@@ -100,7 +100,7 @@ func (s *Service) DeleteUser(req *domain.Request) error {
 }
 
 func (s *Service) CheckUser(req *domain.Request) bool {
-	user := database.Model{
+	user := u.User{
 		Name: req.Name,
 		Age:  req.Age,
 	}

@@ -11,9 +11,9 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"user/internal/controller"
 	"user/internal/database"
 	"user/internal/domain"
-	"user/internal/handlers"
 	"user/internal/service"
 )
 
@@ -30,7 +30,7 @@ func spawnServers(amount int, shutdown chan os.Signal, client *database.Client, 
 			handlerService := service.NewService(client, logger)
 
 			mainRouter := mux.NewRouter()
-			handler := handlers.NewRequestHandler(handlerService, logger)
+			handler := controller.NewRequestHandler(handlerService, logger)
 
 			handler.Routes(mainRouter)
 

@@ -4,6 +4,7 @@ import (
 	"log"
 	"testing"
 	"user/internal/domain"
+	u "user/internal/user"
 )
 
 // strange to test this level, because it's called when everything is tested,
@@ -11,12 +12,12 @@ import (
 func TestClient_CreateDeleteUser(t *testing.T) {
 	test := []struct {
 		name    string
-		model   Model
+		model   u.User
 		wantErr bool
 	}{
 		{
 			name: "positive_test",
-			model: Model{
+			model: u.User{
 				Name: "test",
 				Age:  20,
 			},
@@ -44,13 +45,13 @@ func TestClient_CreateDeleteUser(t *testing.T) {
 func TestClient_CreateUserChangeAge(t *testing.T) {
 	test := []struct {
 		name    string
-		model   Model
+		model   u.User
 		newAge  int
 		wantErr bool
 	}{
 		{
 			name: "positive_test",
-			model: Model{
+			model: u.User{
 				Name: "test",
 				Age:  20,
 			},
@@ -108,12 +109,12 @@ func TestClient_GetUsers(t *testing.T) {
 func TestClient_GetUser(t *testing.T) {
 	test := []struct {
 		name    string
-		user    Model
+		user    u.User
 		wantErr bool
 	}{
 		{
 			name: "positive_test",
-			user: Model{
+			user: u.User{
 				Name: "test",
 				Age:  20,
 			},

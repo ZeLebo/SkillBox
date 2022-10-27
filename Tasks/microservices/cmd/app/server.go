@@ -7,9 +7,9 @@ import (
 	"os"
 	"os/signal"
 	"syscall"
+	"user/internal/controller"
 	"user/internal/database"
 	"user/internal/domain"
-	"user/internal/handlers"
 	"user/internal/service"
 )
 
@@ -25,7 +25,7 @@ func StartServer(port string, signalChan chan os.Signal) {
 	handlerService := service.NewService(client, logger)
 
 	mainRouter := mux.NewRouter()
-	handler := handlers.NewRequestHandler(handlerService, logger)
+	handler := controller.NewRequestHandler(handlerService, logger)
 
 	handler.Routes(mainRouter)
 

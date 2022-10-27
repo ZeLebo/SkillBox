@@ -64,7 +64,11 @@ func (c *Client) GetUsers() ([]u.User, error) {
 	return result, nil
 }
 
-func (c *Client) CreateUser(model Model) (int, error) {
+func (c *Client) CreateUser(user u.User) (int, error) {
+	model := Model{
+		Name: user.Name,
+		Age:  user.Age,
+	}
 	if err := c.db.Create(&model).Error; err != nil {
 		return 0, err
 	}
@@ -135,7 +139,11 @@ func (c *Client) GetFriends(id int) ([]u.User, error) {
 	return friends, nil
 }
 
-func (c *Client) CheckUser(user Model) bool {
+func (c *Client) CheckUser(us u.User) bool {
+	user := Model{
+		Name: us.Name,
+		Age:  us.Age,
+	}
 	var model Model
 	if err := c.db.Where("name = ? AND age = ?", user.Name, user.Age).First(&model).Error; err != nil {
 		return false
@@ -155,9 +163,13 @@ func (c *Client) GetUserByID(id int) (u.User, error) {
 	}, nil
 }
 
-func (c *Client) GetUserID(user Model) int {
+func (c *Client) GetUserID(user u.User) int {
+	model := Model{
+		Name: user.Name,
+		Age:  user.Age,
+	}
 	var id int
-	if err := c.db.Model(&Model{}).Where("name = ? AND age = ?", user.Name, user.Age).Select("id").First(&id).Error; err != nil {
+	if err := c.db.Model(&Model{}).Where("name = ? AND age = ?", model.Name, model.Age).Select("id").First(&id).Error; err != nil {
 		return 0
 	}
 	return id
