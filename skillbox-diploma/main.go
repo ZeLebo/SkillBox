@@ -1,46 +1,17 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"github.com/gorilla/mux"
-	"io/ioutil"
-	"math/rand"
-	"net/http"
-	"strconv"
-	"strings"
-	"time"
-    "diploma/domain"
+    d "diploma/domain"
+    "encoding/json"
+    "fmt"
+    "github.com/gorilla/mux"
+    "io/ioutil"
+    "math/rand"
+    "net/http"
+    "strconv"
+    "strings"
+    "time"
 )
-
-const minResponseTime = 30
-const maxResponseTime = 2000
-
-const minConnectionStability = 600
-const maxConnectionStability = 1000
-
-const minVoicePurity = 0
-const maxVoicePurity = 92
-
-const minVoiceCallMedian = 3
-const maxVoiceCallMedian = 60
-
-const minTTFB = 2
-const maxTTFB = 980
-
-const minBandwidth = 0
-const maxBandwidth = 100
-
-const minEmailDeliveryTime = 0
-const maxEmailDeliveryTime = 600
-
-const smsFilename = "sms.data"
-const mmsApiUrl = "http://localhost:8282/mms" // to params
-const voiceFilename = "voice.data"
-const emailFilename = "email.data"
-const billingFilename = "billing.data"
-const supportApiUrl = "http://localhost:8282/support"
-const accendentListFilename = "accendents.data"
 
 var firstSMSRowForCorrupt int
 var secondSMSRowForCorrupt int
@@ -143,7 +114,7 @@ func shuffleSmsData() {
 		data += row
 	}
 
-	err := ioutil.WriteFile(getFilapathByFilename(smsFilename), []byte(data), 0644)
+	err := ioutil.WriteFile(getFilapathByFilename(d.SmsFilename), []byte(data), 0644)
 	if err != nil {
 		fmt.Printf("Error in write sms data: %s", err.Error())
 	}
@@ -191,7 +162,7 @@ func shuffleVoiceData() {
 		data += row
 	}
 
-	err := ioutil.WriteFile(getFilapathByFilename(voiceFilename), []byte(data), 0644)
+	err := ioutil.WriteFile(getFilapathByFilename(d.VoiceFilename), []byte(data), 0644)
 	if err != nil {
 		fmt.Printf("Error in write sms data: %s", err.Error())
 	}
@@ -228,7 +199,7 @@ func shuffleEmailData() {
 		}
 	}
 
-	err := ioutil.WriteFile(getFilapathByFilename(emailFilename), []byte(data), 0644)
+	err := ioutil.WriteFile(getFilapathByFilename(d.EmailFilename), []byte(data), 0644)
 	if err != nil {
 		fmt.Printf("Error in write email data: %s", err.Error())
 	}
@@ -253,7 +224,7 @@ func shuffleBillingData() {
 		// checkout page
 	}
 
-	err := ioutil.WriteFile(getFilapathByFilename(billingFilename), []byte(data), 0644)
+	err := ioutil.WriteFile(getFilapathByFilename(d.BillingFilename), []byte(data), 0644)
 	if err != nil {
 		fmt.Printf("Error in write sms data: %s", err.Error())
 	}
@@ -396,33 +367,33 @@ func getFilapathByFilename(filename string) string {
 }
 
 func getRandomBandwidthInString() string {
-	return strconv.Itoa(getRandomIntBetweenValues(minBandwidth, maxBandwidth))
+	return strconv.Itoa(getRandomIntBetweenValues(d.MinBandwidth, d.MaxBandwidth))
 }
 
 func getRandomResponseTimeInString() string {
-	return strconv.Itoa(getRandomIntBetweenValues(minResponseTime, maxResponseTime))
+	return strconv.Itoa(getRandomIntBetweenValues(d.MinResponseTime, d.MaxResponseTime))
 }
 
 func getRandomConnectionStability() string {
-	stability := getRandomIntBetweenValues(minConnectionStability, maxConnectionStability)
+	stability := getRandomIntBetweenValues(d.MinConnectionStability, d.MaxConnectionStability)
 
 	return fmt.Sprintf("%.2f", float32(stability)/1000)
 }
 
 func getRandomTTFB() string {
-	return strconv.Itoa(getRandomIntBetweenValues(minTTFB, maxTTFB))
+	return strconv.Itoa(getRandomIntBetweenValues(d.MinTTFB, d.MaxTTFB))
 }
 
 func getRandomVoicePurity() string {
-	return strconv.Itoa(getRandomIntBetweenValues(minVoicePurity, maxVoicePurity))
+	return strconv.Itoa(getRandomIntBetweenValues(d.MinVoicePurity, d.MaxVoicePurity))
 }
 
 func getRandomMedianOfCallsTime() string {
-	return strconv.Itoa(getRandomIntBetweenValues(minVoiceCallMedian, maxVoiceCallMedian))
+	return strconv.Itoa(getRandomIntBetweenValues(d.MinVoiceCallMedian, d.MaxVoiceCallMedian))
 }
 
 func getRandomEmailDeliveryTime() string {
-	return strconv.Itoa(getRandomIntBetweenValues(minEmailDeliveryTime, maxEmailDeliveryTime))
+	return strconv.Itoa(getRandomIntBetweenValues(d.MinEmailDeliveryTime, d.MaxEmailDeliveryTime))
 }
 
 func getRandomIntBetweenValues(min int, max int) int {
@@ -455,7 +426,7 @@ func handleAccendent(w http.ResponseWriter, r *http.Request) {
 func handleTest(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "*")
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-	w.Write([]byte(domain.ByteString))
+	w.Write([]byte(d.TestByteString))
 }
 
 func response(w http.ResponseWriter, r *http.Request, responseStruct interface{}) {
