@@ -1,16 +1,16 @@
-package main
+package app
 
 import (
-    d "diploma/domain"
-    "encoding/json"
-    "fmt"
-    "github.com/gorilla/mux"
-    "io/ioutil"
-    "math/rand"
-    "net/http"
-    "strconv"
-    "strings"
-    "time"
+	d "diploma/domain"
+	"encoding/json"
+	"fmt"
+	"github.com/gorilla/mux"
+	"io/ioutil"
+	"math/rand"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
 )
 
 var firstSMSRowForCorrupt int
@@ -78,7 +78,7 @@ func init() {
 	fmt.Printf("Second Email row for currupt %d\n", secondEmailRowForCorrupt+1)
 }
 
-func main() {
+func Run() {
 	shuffleSmsData()
 
 	MMSCollection = shuffleMMSData()
