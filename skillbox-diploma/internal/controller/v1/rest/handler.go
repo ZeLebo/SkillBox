@@ -51,7 +51,12 @@ func handleTest(w http.ResponseWriter, r *http.Request) {
 }
 
 func response(w http.ResponseWriter, r *http.Request, responseStruct interface{}) {
-	response, _ := json.Marshal(responseStruct)
+	response, err := json.Marshal(responseStruct)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
 
 	w.Write(response)
 }

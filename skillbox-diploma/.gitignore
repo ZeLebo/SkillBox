@@ -1,4 +1,4 @@
-billing.data
-email.data
-sms.data
-voice.data
+data/billing.data
+data/email.data
+data/sms.data
+data/voice.data
