@@ -21,6 +21,8 @@ func init() {
 
 	secondEmailRowForCorrupt = rand.Intn(90)
 	fmt.Printf("Second Email row for currupt %d\n", secondEmailRowForCorrupt+1)
+
+	ShuffleEmailData()
 }
 
 func ShuffleEmailData() {

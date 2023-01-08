@@ -11,6 +11,10 @@ import (
 var firstVoiceRowForCorrupt int
 var secondVoiceRowForCorrupt int
 
+func init() {
+	ShuffleVoiceData()
+}
+
 func ShuffleVoiceData() {
 	var data string
 	for i, country := range getCountriesList() {

@@ -7,6 +7,10 @@ import (
 
 var AccendentCollection []entity.AccendentItem
 
+func init() {
+	AccendentCollection = ShuffleAccendentData()
+}
+
 var AccendentTopics = []string{
 	"SMS delivery in EU",
 	"MMS connection stability",

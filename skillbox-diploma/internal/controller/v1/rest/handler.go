@@ -8,20 +8,7 @@ import (
 	"net/http"
 )
 
-func init() {
-	s.ShuffleSmsData()
-
-	s.MMSCollection = s.ShuffleMMSData()
-
-	s.ShuffleVoiceData()
-	s.ShuffleEmailData()
-	s.ShuffleBillingData()
-
-	s.SupportCollection = s.ShuffleSupportData()
-	s.AccendentCollection = s.ShuffleAccendentData()
-}
-
-func ListenAndServeHTTP() {
+func StartServer() {
 	router := mux.NewRouter()
 
 	router.HandleFunc("/mms", handleMMS)
@@ -32,6 +19,7 @@ func ListenAndServeHTTP() {
 	http.ListenAndServe("localhost:8383", router)
 }
 
+// todo all the above need to be in some struct
 func handleMMS(w http.ResponseWriter, r *http.Request) {
 	response(w, r, s.MMSCollection)
 }
@@ -50,7 +38,7 @@ func handleTest(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte(d.TestByteString))
 }
 
-func response(w http.ResponseWriter, r *http.Request, responseStruct interface{}) {
+func response(w http.ResponseWriter, _ *http.Request, responseStruct interface{}) {
 	response, err := json.Marshal(responseStruct)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)

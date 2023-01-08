@@ -16,6 +16,8 @@ func init() {
 
 	secondVoiceRowForCorrupt = rand.Intn(90)
 	fmt.Printf("Second Voice row for currupt %d\n", secondVoiceRowForCorrupt+1)
+
+	MMSCollection = ShuffleMMSData()
 }
 
 func ShuffleMMSData() []entity.MMSItem {

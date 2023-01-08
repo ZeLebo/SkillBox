@@ -20,6 +20,8 @@ func init() {
 
 	secondSMSRowForCorrupt = rand.Intn(90)
 	fmt.Printf("Second SMS row for currupt %d\n", secondSMSRowForCorrupt+1)
+
+	ShuffleSmsData()
 }
 
 func ShuffleSmsData() {

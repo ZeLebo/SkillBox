@@ -4,6 +4,10 @@ import "diploma/internal/entity"
 
 var SupportCollection []entity.SupportItem
 
+func init() {
+	SupportCollection = ShuffleSupportData()
+}
+
 func ShuffleSupportData() []entity.SupportItem {
 	data := make([]entity.SupportItem, 0)
 	for _, topic := range getSupportTopicsList() {

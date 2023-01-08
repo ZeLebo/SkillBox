@@ -6,6 +6,10 @@ import (
 	"io/ioutil"
 )
 
+func init() {
+	ShuffleBillingData()
+}
+
 func ShuffleBillingData() {
 	data := ""
 	for i := 0; i < 6; i++ {
